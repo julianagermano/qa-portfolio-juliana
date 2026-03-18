@@ -45,6 +45,48 @@ Buscando sempre criar templates e processos otimizados para acelerar a qualidade
 
 ---
 
+## 🚀 Projeto 1 — Automação de API (Auth – Postman + Newman)
+
+Automação de API com:
+- Testes funcionais
+- Testes de contrato (JSON Schema + Ajv)
+- Scripts dinâmicos Postman
+- Refresh token automático
+- Runner com Newman
+- Relatórios HTML e JSON
+- Execução via .bat
+- Estrutura preparada para CI/CD
+
+📎 Link para o projeto:  
+[api-auth-automation](./api-auth-automation/)
+
+Simples assim.
+
+⭐ EXEMPLO VISUAL de como o seu README raiz deve ficar:
+# qa-portfolio-juliana
+Portfólio de Qualidade de Software – APIs, Automação, Pipelines e Projetos.
+
+---
+
+## 🚀 Projeto 1 — Automação de API (Auth – Postman + Newman)
+
+Automação de API com:
+- Testes funcionais
+- Testes de contrato (JSON Schema + Ajv)
+- Scripts dinâmicos Postman
+- Refresh token automático
+- Runner com Newman
+- Relatórios HTML e JSON
+- Execução via .bat
+- Estrutura preparada para CI/CD
+
+📎 Link para o projeto:  
+[api-auth-automation](./api-auth-automation/)
+
+---
+
+## (Projetos futuros aqui)
+
 ## 🚀 Próximos projetos
 - Automação UI com Playwright  
 - Pipelines avançados em Azure DevOps  
