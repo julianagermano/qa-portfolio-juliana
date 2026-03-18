@@ -1,1 +1,37 @@
+trigger:
+  branches:
+    include:
+      - main
+      - master
 
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+  # 1) Instalar Node.js
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Instalar Node.js'
+
+  # 2) Instalar Newman e Reporter
+  - script: |
+      npm install -g newman newman-reporter-htmlextra --legacy-peer-deps --force
+    displayName: 'Instalar Newman + htmlextra'
+
+  # 3) Executar a Collection
+  - powershell: |
+      $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
+      newman run "$(Build.SourcesDirectory)/api-auth-automation/Auth.postman_collection.json" `
+        -e "$(Build.SourcesDirectory)/api-auth-automation/Auth_DummyJSON.postman_environment.json" `
+        -r "cli,htmlextra" `
+        --reporter-htmlextra-export "$(Build.SourcesDirectory)/api-auth-automation/Resultado_$ts.html"
+    displayName: 'Executar testes Newman'
+
+  # 4) Publicar relatório como artefato
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)/api-auth-automation'
+      ArtifactName: 'newman-report'
+      publishLocation: 'Container'
+    displayName: 'Publicar Relatório'
