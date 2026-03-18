@@ -1,0 +1,6 @@
+username,password,expectedStatus,case
+emilys,emilyspass,200,login_valido
+emilys,wrongpass,401,senha_incorreta
+fake,123456,401,usuario_inexistente
+,senha,400,username_vazio
+emilys,,400,password_vazio
