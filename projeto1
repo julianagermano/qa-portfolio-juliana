@@ -1,0 +1,12 @@
+### 🚀 Projeto 1 — Automação de API (Auth – Postman + Newman)
+📎 Link: ./api-auth-automation
+
+Automação completa envolvendo:
+- Testes funcionais
+- Testes de contrato (JSON Schema)
+- Scripts dinâmicos Postman
+- Refresh token automático
+- Runner com Newman
+- Relatórios HTML e JSON
+- Execução via .bat
+- Estrutura profissional para CI/CD
