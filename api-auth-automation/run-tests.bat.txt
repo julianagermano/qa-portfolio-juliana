@@ -1,0 +1,16 @@
+@echo off
+setlocal
+cd /d "%~dp0"
+
+for /f "tokens=1-5 delims=/:. " %%a in ("%date% %time%") do set TS=%%c-%%b-%%a_%%d%%e
+
+newman run "Auth.postman_collection.json" ^
+  -e "Auth_DummyJSON.postman_environment.json" ^
+  -r "cli,json,html" ^
+  --reporter-json-export "Resultado_%TS%.json" ^
+  --reporter-html-export "Resultado_%TS%.html"
+
+start "" "Resultado_%TS%.html"
+echo.
+echo Relatorios gerados em: %cd%
+pause
