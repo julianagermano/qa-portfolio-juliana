@@ -1,3 +1,6 @@
+# qa-portfolio-juliana
+Portfólio de Qualidade de Software – APIs, Automação, Pipelines e Projetos.
+
 ## 📁 Projetos do Portfólio
 
 ### 🔹 1. Automação de API – Auth (Postman + Newman)
