@@ -92,6 +92,10 @@ Relatório automático
 Execução configurável (headless/headed)
 
 
+## 🖼️ Evidência – Playwright Report
+./screenshots/relatorio-ui.png
+<img width="1365" height="767" alt="image" src="https://github.com/user-attachments/assets/574c12e5-4029-4b7f-b92e-7adab257b3d0" />
+
 Próximos passos
 
 Integração com Pipeline (Projeto 3)
