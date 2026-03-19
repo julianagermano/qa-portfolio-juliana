@@ -1,4 +1,8 @@
 📘 Projeto 3 — Pipeline CI/CD para Testes de API
+
+<img width="1365" height="767" alt="image" src="https://github.com/user-attachments/assets/4abbc82c-b60c-4f70-b09e-8761b782467c" />
+
+
 Este projeto demonstra como executar testes de API automaticamente usando:
 
 Azure DevOps (YAML Pipeline)
