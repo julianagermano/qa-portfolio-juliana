@@ -1,3 +1,4 @@
+@ -0,0 +1,36 @@
 # 🚀 Projeto 4 — API + CSV (Iterações com Newman)
 
 Este projeto demonstra como executar **a mesma collection** várias vezes usando **massa CSV**:
