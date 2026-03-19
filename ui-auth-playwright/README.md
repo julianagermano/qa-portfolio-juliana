@@ -14,10 +14,10 @@ Arquitetura Page Object Model (POM)
 Relatórios HTML gerados automaticamente
 
 
-🔒 Tudo genérico e seguro: UI fictícia criada para fins de portfólio.
+Tudo genérico e seguro: UI fictícia criada para fins de portfólio.
 
 
-📁 Estrutura
+Estrutura
 ui-auth-playwright/
 ├─ tests/
 │  ├─ login.spec.js
