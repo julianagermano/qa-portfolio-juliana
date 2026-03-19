@@ -151,4 +151,107 @@ Portfólio estruturado para leitura de recrutadores
 Arquitetura replicável para qualquer projeto real
 
 
+---
+
+## 🖼️ Screenshot do Relatório (htmlextra)
+
+Abaixo um exemplo real do relatório gerado durante a execução deste projeto:
+
+![Relatório CSV](./screenshots/resultado-csv.png)
+
+> *Este screenshot mostra exatamente como o relatório é exibido com o `newman-reporter-htmlextra`:*
+> - tema claro/escuro
+> - cartões de estatísticas (iterações, asserts, falhas)
+> - time metrics (mín, máx, média)
+> - detalhes de cada request
+> - navegação por abas (Summary, Requests, Failed, Skipped)
+
+---
+
+## 📊 Interpretação do Relatório
+
+O relatório do **htmlextra** é dividido em seções importantes para análise rápida:
+
+### 🔹 **Summary**
+Mostra um panorama geral:
+- Iterações executadas  
+- Total de requisições  
+- Total de asserts  
+- Falhas (se houver)  
+- Tempo médio de resposta  
+
+### 🔹 **Requests**
+Exibe cada chamada HTTP e inclui:
+- URL  
+- Método  
+- Corpo enviado  
+- Status retornado  
+- Headers  
+- Response body  
+
+### 🔹 **Test Results**
+Lista todos os testes:
+- asserts que passaram ou falharam  
+- scripts relacionados  
+- logs e mensagens do Postman  
+
+### 🔹 **Response Times**
+Gráficos mostrando:
+- mínimo  
+- máximo  
+- média  
+- desvio padrão  
+
+### 🔹 **Exportações**
+Além do HTML, este projeto gera:
+- `Resultado_csv.html` (visual)  
+- `Resultado_csv.json` (auditoria completa)
+
+---
+
+## 🏁 Resultado Final
+
+A execução deste projeto com a massa CSV resultou em:
+
+- **Total Iterations:** 13  
+- **Total Requests:** 52  
+- **Assertions:** 65  
+- **Failed Tests:** 0  
+- **Tempo médio:** ~190 ms  
+
+Esses números confirmam:
+- a collection está consistente  
+- os scripts de validação funcionam  
+- a massa CSV está bem definida  
+- o fluxo contínuo de autenticação (login → erro → combinações) opera corretamente
+
+---
+
+## 🧩 Benefícios deste Projeto
+
+- Demonstra domínio de **testes orientados a dados (DDT)**  
+- Útil para validar diversos cenários sem alterar a collection  
+- Pronto para CI/CD (Pipeline do Projeto 3)  
+- Cria evidências profissionais (HTML/JSON)  
+- Visual forte para portfólio  
+- API pública = zero risco de compliance  
+- Fácil de replicar em qualquer empresa
+
+---
+
+## 🏆 Conclusão
+
+Este projeto comprova habilidade em:
+- **Automação de API**
+- **Testes orientados a dados (CSV)**
+- **Newman CLI**
+- **Relatórios HTML avançados**
+- **Validações dinâmicas com Postman Scripts**
+- **Organização profissional de portfólio**
+
+Ele se integra naturalmente com:
+- Projeto 1 (Collection de API)  
+- Projeto 2 (Processos de QA)  
+- Projeto 3 (Pipeline CI/CD)
+
 Feito com 💛 por Juliana
