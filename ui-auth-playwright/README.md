@@ -1,7 +1,5 @@
 Projeto 5 — Automação de UI com Playwright
-https://img.shields.io/badge/Tipo-Automação%20UI-purple?style=flat-square
-https://img.shields.io/badge/Playwright-Framework-brightgreen?style=flat-square
-https://img.shields.io/badge/Relatórios-HTML%20&%20TraceViewer-blue?style=flat-square
+
 Este projeto demonstra automação UI end‑to‑end usando Playwright, com:
 
 Testes rápidos e estáveis
@@ -93,7 +91,7 @@ Execução configurável (headless/headed)
 
 
 ## 🖼️ Evidência – Playwright Report
-./screenshots/relatorio-ui.png
+
 <img width="1365" height="767" alt="image" src="https://github.com/user-attachments/assets/574c12e5-4029-4b7f-b92e-7adab257b3d0" />
 
 Próximos passos
