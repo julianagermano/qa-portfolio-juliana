@@ -1,0 +1,13 @@
+{
+  "name": "ui-auth-playwright",
+  "version": "1.0.0",
+  "description": "Projeto 5 - Automação de UI com Playwright (portfólio genérico)",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --headed",
+    "report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0"
+  }
+}
