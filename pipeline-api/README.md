@@ -1,7 +1,6 @@
 📘 Projeto 3 — Pipeline CI/CD para Testes de API
 
-<img width="1365" height="767" alt="image" src="https://github.com/user-attachments/assets/4abbc82c-b60c-4f70-b09e-8761b782467c" />
-
+[![Build Status](https://dev.azure.com/SISTEMAS-DOTNET/QA/_apis/build/status%2Fjulianagermano.qa-portfolio-juliana?branchName=main)](https://dev.azure.com/SISTEMAS-DOTNET/QA/_build/latest?definitionId=2&branchName=main)
 
 Este projeto demonstra como executar testes de API automaticamente usando:
 
