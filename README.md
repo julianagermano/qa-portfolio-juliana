@@ -1,4 +1,6 @@
 # qa-portfolio-juliana
+[![Build Status](https://dev.azure.com/SISTEMAS-DOTNET/QA/_apis/build/status%2Fjulianagermano.qa-portfolio-juliana?branchName=main)](https://dev.azure.com/SISTEMAS-DOTNET/QA/_build/latest?definitionId=2&branchName=main)
+
 Portfólio de Qualidade de Software – APIs, Automação, Pipelines e Projetos.
 
 ## 📁 Projetos do Portfólio
