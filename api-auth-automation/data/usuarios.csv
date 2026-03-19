@@ -1,6 +1,14 @@
 username,password,expectedStatus,case
 emilys,emilyspass,200,login_valido
 emilys,wrongpass,401,senha_incorreta
-fake,123456,401,usuario_inexistente
-,senha,400,username_vazio
-emilys,,400,password_vazio
+user123,abc123,401,usuario_inexistente
+,anypass,400,username_vazio
+john.doe, ,400,password_vazio
+qa.tester1,wrong,401,senha_errada_random
+random.user,random.pass,401,usuario_fake
+emilys," emilyspass ",200,login_com_espaco_antes
+EMILYS,EMILYPASS,401,case_sensitivity
+tester+1@example.com,pass123,401,email_como_username_fake
+naoexiste,senha@123,401,usuario_aleatorio
+teste,teste,401,credenciais_genéricas_invalidas
+qa_user05,password05,401,teste_falso
