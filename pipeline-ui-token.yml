@@ -1,1 +1,51 @@
+# Projeto 6 — Pipeline UI + API Token (Playwright)
 
+trigger:
+  branches:
+    include:
+      - main
+      - master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  projectDir: 'ui-api-token'
+  reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
+  junitFile: '$(Build.SourcesDirectory)/ui-api-token/test-results/results.xml'
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Instalar Node.js 20'
+
+  - script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo "Instalar dependências..."
+      npm ci || npm install
+      echo "Instalar navegadores do Playwright..."
+      npx playwright install --with-deps
+    displayName: 'Instalar dependências (npm + Playwright)'
+
+  - script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo "Executar testes Playwright..."
+      npx playwright test --reporter=list,html,junit --output=test-results --reporter-junit-output=$(junitFile)
+    displayName: 'Executar testes UI + API Token'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '$(junitFile)'
+      failTaskOnFailedTests: true
+    condition: succeededOrFailed()
+    displayName: 'Publicar Test Results (JUnit)'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(reportDir)'
+      ArtifactName: 'playwright-report-ui-token'
+      publishLocation: 'Container'
+    condition: always()
+    displayName: 'Publicar Relatório HTML Playwright'
