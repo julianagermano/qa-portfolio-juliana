@@ -23,7 +23,7 @@ steps:
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Instalar dependências..."
-      npm ci || npm install
+      npm install
       echo "Instalar navegadores Playwright..."
       npx playwright install --with-deps
     displayName: 'Instalar dependências (npm + Playwright)'
@@ -31,13 +31,13 @@ steps:
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Executar testes Playwright..."
-      npx playwright test --reporter=list,html,junit --output=test-results --reporter-junit-output=$(junitFile)
+      npx playwright test --reporter=list,html --output=test-results
     displayName: 'Executar testes UI + API Token'
 
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '$(junitFile)'
+      testResultsFiles: '$(Build.SourcesDirectory)/ui-api-token/test-results/*.xml'
       failTaskOnFailedTests: true
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
