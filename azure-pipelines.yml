@@ -1,0 +1,37 @@
+# Projeto 3 — API (Newman) – CI
+
+trigger:
+  branches: [ main ]
+  paths:
+    include:
+      - pipeline-api/**
+      - api-auth-automation/**
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Instalar Node.js 20'
+
+  - script: |
+      npm install -g newman newman-reporter-htmlextra --legacy-peer-deps --force
+    displayName: 'Instalar Newman + htmlextra'
+
+  - powershell: |
+      $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
+      newman run "$(Build.SourcesDirectory)/api-auth-automation/Auth.postman_collection.json" `
+        -e "$(Build.SourcesDirectory)/api-auth-automation/Auth_DummyJSON.postman_environment.json" `
+        -r "cli,htmlextra" `
+        --reporter-htmlextra-export "$(Build.SourcesDirectory)/api-auth-automation/Resultado_$ts.html"
+    displayName: 'Executar API (Newman)'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)/api-auth-automation'
+      ArtifactName: 'newman-report'
+      publishLocation: 'Container'
+    condition: always()
+    displayName: 'Publicar relatório Newman'
