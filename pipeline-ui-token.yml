@@ -24,7 +24,7 @@ steps:
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Instalar dependências..."
       npm ci || npm install
-      echo "Instalar navegadores do Playwright..."
+      echo "Instalar navegadores Playwright..."
       npx playwright install --with-deps
     displayName: 'Instalar dependências (npm + Playwright)'
 
