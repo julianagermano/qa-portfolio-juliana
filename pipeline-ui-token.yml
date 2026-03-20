@@ -1,7 +1,9 @@
 # Projeto 6 — UI + API Token (Playwright)
 
 trigger:
-  branches: [ main ]
+  branches:
+    include:
+      - main
   paths:
     include:
       - ui-api-token/**
