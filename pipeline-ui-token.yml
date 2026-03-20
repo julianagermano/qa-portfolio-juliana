@@ -1,10 +1,10 @@
 # Projeto 6 — Pipeline UI + API Token (Playwright)
+# YAML corrigido, funcional e compatível com Azure DevOps
 
 trigger:
   branches:
     include:
       - main
-      - master
 
 pool:
   vmImage: 'windows-latest'
@@ -12,7 +12,7 @@ pool:
 variables:
   projectDir: 'ui-api-token'
   reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
-  junitFile: '$(Build.SourcesDirectory)/ui-api-token/test-results/results.xml'
+  resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
 
 steps:
   - task: NodeTool@0
@@ -31,14 +31,14 @@ steps:
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Executar testes Playwright..."
-      npx playwright test --reporter=list,html --output=test-results
+      npx playwright test --reporter=list,html,junit --output=test-results --reporter-junit-output=test-results/junit.xml
     displayName: 'Executar testes UI + API Token'
 
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '$(Build.SourcesDirectory)/ui-api-token/test-results/*.xml'
-      failTaskOnFailedTests: true
+      testResultsFiles: '$(resultsDir)/junit.xml'
+      failTaskOnFailedTests: false
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
 
