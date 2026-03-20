@@ -28,10 +28,10 @@ steps:
       npx playwright install --with-deps
     displayName: 'Instalar dependências (npm + Playwright)'
 
-  - script: |
+- script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
-      echo "Executar testes Playwright..."
-      npx playwright test --reporter=list,html,junit --output=test-results --reporter-junit-output=test-results/junit.xml
+      echo "Executar testes Playwright…"
+      npx playwright test --reporter=list,html,junit --output=test-results --reporter-option outputFile=test-results/junit.xml
     displayName: 'Executar testes UI + API Token'
 
   - task: PublishTestResults@2
