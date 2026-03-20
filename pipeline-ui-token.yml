@@ -1,10 +1,11 @@
-# Projeto 6 — Pipeline UI + API Token (Playwright)
-# YAML corrigido, funcional e compatível com Azure DevOps
+# Projeto 6 — UI + API Token (Playwright)
 
 trigger:
-  branches:
+  branches: [ main ]
+  paths:
     include:
-      - main
+      - ui-api-token/**
+      - pipeline-ui-token.yml
 
 pool:
   vmImage: 'windows-latest'
@@ -22,15 +23,15 @@ steps:
 
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
-      echo "Instalar dependências..."
+      echo "Instalar dependências (npm)…"
       npm install
-      echo "Instalar navegadores Playwright..."
+      echo "Instalar navegadores Playwright…"
       npx playwright install --with-deps
     displayName: 'Instalar dependências (npm + Playwright)'
 
-- script: |
+  - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
-      echo "Executar testes Playwright…"
+      echo "Executar testes (HTML + JUnit)…"
       npx playwright test --reporter=list,html,junit --output=test-results --reporter-option outputFile=test-results/junit.xml
     displayName: 'Executar testes UI + API Token'
 
@@ -38,7 +39,7 @@ steps:
     inputs:
       testResultsFormat: 'JUnit'
       testResultsFiles: '$(resultsDir)/junit.xml'
-      failTaskOnFailedTests: false
+      failTaskOnFailedTests: true
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
 
@@ -48,4 +49,4 @@ steps:
       ArtifactName: 'playwright-report-ui-token'
       publishLocation: 'Container'
     condition: always()
-    displayName: 'Publicar Relatório HTML Playwright'
+    displayName: 'Publicar relatório HTML (Playwright)'
