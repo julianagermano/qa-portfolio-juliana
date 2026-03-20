@@ -1,0 +1,19 @@
+{
+  "name": "ui-api-token",
+  "version": "1.0.0",
+  "description": "Automação de **UI** iniciando **já autenticada**, obtendo o **token via API** (DummyJSON).  \r Técnicas demonstradas:\r - `Authorization` header global\r - `localStorage` (SPA)\r - `cookie` (apps com sessão)",
+  "main": "playwright.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}

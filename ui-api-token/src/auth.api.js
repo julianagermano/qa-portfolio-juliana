@@ -1,15 +1,10 @@
-// src/auth.api.js
-const { request } = require('@playwright/test');
+﻿const { request } = require("@playwright/test");
 
-/**
- * Faz login na DummyJSON e retorna { accessToken, refreshToken }.
- * API pública de demonstração: https://dummyjson.com/docs/auth
- */
-async function getAuthTokens(username = 'emilys', password = 'emilyspass') {
+async function getAuthTokens(username = "emilys", password = "emilyspass") {
   const api = await request.newContext();
-  const resp = await api.post('https://dummyjson.com/auth/login', {
+  const resp = await api.post("https://dummyjson.com/auth/login", {
     data: { username, password },
-    headers: { 'Content-Type': 'application/json' }
+    headers: { "Content-Type": "application/json" }
   });
 
   if (!resp.ok()) {
@@ -20,4 +15,3 @@ async function getAuthTokens(username = 'emilys', password = 'emilyspass') {
 }
 
 module.exports = { getAuthTokens };
-``
