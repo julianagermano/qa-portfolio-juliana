@@ -1,7 +1,9 @@
 # Projeto 6 — UI + API Token (Playwright)
 
 trigger:
-  branches: [ main ]
+  branches:
+    include:
+      - main
   paths:
     include:
       - ui-api-token/**
@@ -50,7 +52,6 @@ steps:
       echo "Executar testes (HTML + JUnit via config)…"
       npx playwright test --reporter=list,html --output=test-results
     displayName: 'Executar testes UI + API Token'
-
 
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
