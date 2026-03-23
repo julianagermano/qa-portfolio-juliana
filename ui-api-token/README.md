@@ -155,25 +155,80 @@ Pipeline (opcional – Azure DevOps)
 pool:
   vmImage: 'windows-latest'
 
+variables:
+  projectdir: 'ui-api-token'
+  NPM_CACHE_FOLDER: '$(Pipeline.Workspace)/.npm'
+  PLAYWRIGHT_BROWSERS_PATH: '$(Pipeline.Workspace)/.pw-browsers'
+
 steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '20.x'
-    displayName: 'Node.js 20'
+- checkout: self
+  fetchDepth: 1
 
-  - script: |
-      cd $(Build.SourcesDirectory)/ui-api-token
-      npm ci || npm install
-      npx playwright install --with-deps
-      npx playwright test
-    displayName: 'Playwright – UI + API token'
+# (Opcional mas MUITO útil) Diagnóstico rápido
+- powershell: |
+    Write-Host "Build.SourcesDirectory = $(Build.SourcesDirectory)"
+    Write-Host "Conteúdo da raiz:"
+    Get-ChildItem "$(Build.SourcesDirectory)" -Force
+    Write-Host "Conteúdo do projeto:"
+    Get-ChildItem "$(Build.SourcesDirectory)/$(projectdir)" -Force
+  displayName: 'Diagnóstico: estrutura do repo'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
-      ArtifactName: 'playwright-report-ui-token'
-      publishLocation: 'Container'
-    displayName: 'Publicar relatório'
+# ✅ Cache do npm (agora apontando para o lockfile da subpasta)
+- task: Cache@2
+  inputs:
+    key: 'npm | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
+    restoreKeys: |
+      npm | "$(Agent.OS)"
+    path: '$(NPM_CACHE_FOLDER)'
+  displayName: 'Cache do npm'
+
+# ✅ Instalar dependências dentro da pasta certa
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    npm config set cache "$(NPM_CACHE_FOLDER)" --global
+    npm ci
+  displayName: 'Instalar dependências (npm ci)'
+
+# ✅ Cache dos browsers do Playwright
+- task: Cache@2
+  inputs:
+    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
+    restoreKeys: |
+      playwright | "$(Agent.OS)"
+    path: '$(PLAYWRIGHT_BROWSERS_PATH)'
+  displayName: 'Cache Playwright browsers'
+
+# ✅ Instalar browsers do Playwright
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
+    npx playwright install
+  displayName: 'Instalar browsers do Playwright'
+
+# ✅ Rodar testes (gera HTML + JUnit)
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
+    npx playwright test --reporter=list,html,junit
+  displayName: 'Executar testes Playwright'
+
+# ✅ Publicar JUnit (mesmo se falhar)
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/junit*.xml'
+    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
+    failTaskOnFailedTests: false
+  displayName: 'Publicar resultados JUnit'
+
+# ✅ Publicar relatório HTML do Playwright
+- task: PublishPipelineArtifact@1
+  condition: succeededOrFailed()
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
+    artifact: 'playwright-report'
+  displayName: 'Publicar relatório HTML'
 
 Depois de criar a pipeline, adicione o badge no topo deste README (igual o Projeto 3).
 
