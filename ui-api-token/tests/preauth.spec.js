@@ -9,6 +9,7 @@ const COOKIE_NAME      = 'auth_token';
 
 test.setTimeout(60_000);
 
+// A) Header Authorization
 test('A) Token via Authorization header global', async ({ browser }) => {
   const context = await browser.newContext({
     extraHTTPHeaders: { Authorization: 'Bearer demo-token' }
@@ -21,6 +22,7 @@ test('A) Token via Authorization header global', async ({ browser }) => {
   await context.close();
 });
 
+// B) LocalStorage
 test('B) Token pré-carregado no localStorage (SPA)', async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -31,9 +33,11 @@ test('B) Token pré-carregado no localStorage (SPA)', async ({ browser }) => {
   await context.close();
 });
 
+// C) Cookie de sessão
 test('C) Token como cookie (sessão)', async ({ browser }) => {
   const context = await browser.newContext();
   const url = new URL(TARGET_COOKIE_CHECK);
+
   await context.addCookies([{
     name: COOKIE_NAME,
     value: 'demo-token',
@@ -42,10 +46,10 @@ test('C) Token como cookie (sessão)', async ({ browser }) => {
     httpOnly: false,
     secure: true
   }]);
+
   const page = await context.newPage();
   await page.goto(TARGET_COOKIE_CHECK, { waitUntil: 'domcontentloaded' });
   const text = await page.locator('pre').innerText();
   expect(text).toMatch(/"auth_token"\s*:\s*"demo-token"/);
   await context.close();
 });
-``
