@@ -67,8 +67,22 @@ steps:
       echo "Listando $(resultsDir):"
       ls -la "$(resultsDir)" || true
     displayName: 'Inspecionar arquivos JUnit'
+    
+  # 5) Garantir pasta do relatorio (fallback)
+  - script: |
+      mkdir -p "$(Build.SourcesDirectory)/ui-api-token/playwright-report"
+      echo "<html><body><h3>Relatorio nao gerado porque os testes falharam.</h3></body></html>" > "$(Build.SourcesDirectory)/ui-api-token/playwright-report/index.html"
+    displayName: 'Garantir pasta do relatorio (fallback)'
+    condition: failed()
 
-  # 6) Publicar Test Results (JUnit) — aceita qualquer .xml na pasta
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(reportDir)'
+      ArtifactName: 'playwright-report-ui-token'
+      publishLocation: 'Container'
+    condition: always()
+    displayName: 'Publicar relatorio HTML (Playwright)'
+
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
@@ -78,12 +92,3 @@ steps:
       testRunTitle: 'Projeto 6 — UI+API Token (Playwright)'
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
-
-  # 7) Publicar relatorio HTML (Playwright)
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: '$(reportDir)'
-      ArtifactName: 'playwright-report-ui-token'
-      publishLocation: 'Container'
-    condition: always()
-    displayName: 'Publicar relatorio HTML (Playwright)'
