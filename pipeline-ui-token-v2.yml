@@ -60,6 +60,14 @@ steps:
     displayName: 'Executar testes UI + API Token'
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
+  
+  - script: |
+      set -e
+      echo "Listando ui-api-token/test-results:"
+      ls -la "$(Build.SourcesDirectory)/ui-api-token/test-results" || true
+      echo "Procurando *-results*.xml no workspace:"
+      find "$(Build.SourcesDirectory)" -maxdepth 3 -name "*.xml" -print || true
+    displayName: 'Inspecionar arquivos JUnit'
 
   # 5) (opcional) Inspecionar pasta de resultados JUnit
   - script: |
@@ -73,11 +81,11 @@ steps:
       mkdir -p "$(Build.SourcesDirectory)/ui-api-token/playwright-report"
       echo "<html><body><h3>Relatorio nao gerado porque os testes falharam.</h3></body></html>" > "$(Build.SourcesDirectory)/ui-api-token/playwright-report/index.html"
     displayName: 'Garantir pasta do relatorio (fallback)'
-    condition: failed()
+    condition: failed()   # roda apenas se o step anterior falhar
 
   - task: PublishBuildArtifacts@1
     inputs:
-      PathtoPublish: '$(reportDir)'
+      PathtoPublish: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
       ArtifactName: 'playwright-report-ui-token'
       publishLocation: 'Container'
     condition: always()
@@ -86,8 +94,8 @@ steps:
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '$(resultsDir)/*.xml'
-      searchFolder: '$(resultsDir)'
+      testResultsFiles: '$(Build.SourcesDirectory)/ui-api-token/test-results/*.xml'
+      searchFolder: '$(Build.SourcesDirectory)'
       failTaskOnFailedTests: true
       testRunTitle: 'Projeto 6 — UI+API Token (Playwright)'
     condition: succeededOrFailed()
