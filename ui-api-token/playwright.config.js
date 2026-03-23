@@ -1,14 +1,14 @@
-// Config Playwright (CommonJS) — limpa para CI
+// ui-api-token/playwright.config.js
 const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
   timeout: 60_000,
-reporter: [
-  ['list'],
-  ['html',  { outputFolder: 'playwright-report', open: 'never' }],
-  ['junit', { outputFile: 'test-results/junit.xml' }]
-]
+  reporter: [
+    ['list'],
+    ['html',  { outputFolder: 'playwright-report', open: 'never' }],
+    ['junit', { outputFile: 'test-results/junit.xml' }]
+  ],
   use: {
     headless: true,
     trace: 'on-first-retry',
