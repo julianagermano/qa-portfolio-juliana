@@ -30,8 +30,8 @@ steps:
       echo "Instalar navegadores Playwright…"
       npx playwright install --with-deps
     displayName: 'Instalar dependências (npm + Playwright)'
-    
-- script: |
+
+  - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       node -v
       npm -v
@@ -39,12 +39,21 @@ steps:
       echo "Listando arquivos do projeto…"
       dir
     displayName: 'Sanity check (versões e estrutura)'
-    
-- script: |
+
+  - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Executar testes (HTML + JUnit)…"
       npx playwright test --reporter=list,html,junit --output=test-results --reporter-option outputFile=test-results/junit.xml
     displayName: 'Executar testes UI + API Token'
+
+  - powershell: |
+      $p = "$(reportDir)"
+      if (!(Test-Path $p)) {
+        New-Item -ItemType Directory -Force -Path $p | Out-Null
+        '<html><body><h3>Relatório não gerado porque os testes falharam.</h3></body></html>' | Out-File "$p\index.html" -Encoding UTF8
+      }
+    displayName: 'Garantir pasta do relatório (fallback)'
+    condition: failed()
 
   - task: PublishTestResults@2
     inputs:
