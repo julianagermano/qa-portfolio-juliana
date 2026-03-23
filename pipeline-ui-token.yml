@@ -16,16 +16,18 @@ variables:
   projectDir: 'ui-api-token'
   reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
   resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
-  # browsers baixados para o workspace do job (evita depender do cache do usuário do agente)
   PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
+  # browsers baixados para o workspace do job (evita depender do cache do usuário do agente)
+
 
 steps:
+  # Node 20
   - task: NodeTool@0
     inputs:
       versionSpec: '20.x'
     displayName: 'Instalar Node.js 20'
 
-  # Instalar dependências + baixar Chromium para a pasta do workspace
+  # Instalar deps + baixar Chromium no workspace
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Instalar dependências (npm)…"
@@ -34,7 +36,7 @@ steps:
       npx playwright install chromium
     displayName: 'Instalar dependências + Chromium (Playwright)'
 
-  # Sanity: versões + comprovar browsers baixados
+  # Sanity: versões + checar browsers baixados
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       node -v
@@ -53,7 +55,7 @@ steps:
       npx playwright test --reporter=list,html --output=test-results
     displayName: 'Executar testes UI + API Token'
 
-  # Fallback: se os testes falharem, ainda assim haverá pasta para publicar
+  # Fallback (se teste falhar, ainda publica um HTML)
   - powershell: |
       $p = "$(reportDir)"
       if (!(Test-Path $p)) {
@@ -72,7 +74,7 @@ steps:
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
 
-  # Publicar o relatório HTML como artifact
+  # Publicar relatório HTML
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(reportDir)'
