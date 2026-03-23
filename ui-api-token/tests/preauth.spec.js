@@ -48,3 +48,4 @@ test('C) Token como cookie (sessão)', async ({ browser }) => {
   expect(text).toMatch(/"auth_token"\s*:\s*"demo-token"/);
   await context.close();
 });
+``
