@@ -9,14 +9,14 @@ trigger:
       - ui-api-token/**
       - pipeline-ui-token.yml
 
-pool: 
+pool:
   vmImage: 'windows-latest'
 
 variables:
   projectDir: 'ui-api-token'
   reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
   resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
-  # browsers baixados para o workspace (não no cache do usuário do agente)
+  # browsers baixados para o workspace do job (evita depender do cache do usuário do agente)
   PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
 steps:
@@ -25,46 +25,45 @@ steps:
       versionSpec: '20.x'
     displayName: 'Instalar Node.js 20'
 
-
-  # Instalar dependências + baixar Chromium no workspace
+  # Instalar dependências + baixar Chromium para a pasta do workspace
   - script: |
-    cd $(Build.SourcesDirectory)/$(projectDir)
-    echo "Instalar dependências (npm)…"
-    npm install
-    echo "Instalar Playwright Chromium para a pasta do workspace…"
-    npx playwright install chromium
-  displayName: 'Instalar dependências + Chromium (Playwright)'
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo "Instalar dependências (npm)…"
+      npm install
+      echo "Instalar Playwright Chromium para a pasta do workspace…"
+      npx playwright install chromium
+    displayName: 'Instalar dependências + Chromium (Playwright)'
 
-  # Sanity: versões e confirmação de browsers baixados
+  # Sanity: versões + comprovar browsers baixados
   - script: |
-    cd $(Build.SourcesDirectory)/$(projectDir)
-    node -v
-    npm -v
-    npx playwright --version
-    echo "Listando pasta de browsers local…"
-    dir "$(Build.SourcesDirectory)\.pw-browsers"
-    echo "Listando estrutura do projeto…"
-    dir
-  displayName: 'Sanity check (versões, browsers e estrutura)'
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      node -v
+      npm -v
+      npx playwright --version
+      echo "Listando pasta de browsers local…"
+      dir "$(Build.SourcesDirectory)\.pw-browsers"
+      echo "Listando estrutura do projeto…"
+      dir
+    displayName: 'Sanity check (versões, browsers e estrutura)'
 
   # Executar testes (JUnit vem do playwright.config.js; HTML gerado pelo reporter html)
   - script: |
-    cd $(Build.SourcesDirectory)/$(projectDir)
-    echo "Executar testes (HTML + JUnit via config)…"
-    npx playwright test --reporter=list,html --output=test-results
-  displayName: 'Executar testes UI + API Token'
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo "Executar testes (HTML + JUnit via config)…"
+      npx playwright test --reporter=list,html --output=test-results
+    displayName: 'Executar testes UI + API Token'
 
-   # Fallback: se os testes quebrarem, ainda assim haverá pasta para publicar
-- powershell: |
-    $p = "$(reportDir)"
-    if (!(Test-Path $p)) {
-      New-Item -ItemType Directory -Force -Path $p | Out-Null
-      '<html><body><h3>Relatório não gerado porque os testes falharam.</h3></body></html>' | Out-File "$p\index.html" -Encoding UTF8
-    }
-  displayName: 'Garantir pasta do relatório (fallback)'
-  condition: failed()
+  # Fallback: se os testes falharem, ainda assim haverá pasta para publicar
+  - powershell: |
+      $p = "$(reportDir)"
+      if (!(Test-Path $p)) {
+        New-Item -ItemType Directory -Force -Path $p | Out-Null
+        '<html><body><h3>Relatório não gerado porque os testes falharam.</h3></body></html>' | Out-File "$p\index.html" -Encoding UTF8
+      }
+    displayName: 'Garantir pasta do relatório (fallback)'
+    condition: failed()
 
-   # Publicar JUnit na aba Tests
+  # Publicar JUnit na aba Tests
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
@@ -73,7 +72,7 @@ steps:
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
 
-      # Publicar o relatório HTML como artifact
+  # Publicar o relatório HTML como artifact
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(reportDir)'
@@ -81,7 +80,3 @@ steps:
       publishLocation: 'Container'
     condition: always()
     displayName: 'Publicar relatório HTML (Playwright)'
-
- 
-
-
