@@ -20,13 +20,11 @@ variables:
   PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
 steps:
-  # 1) Node
   - task: NodeTool@0
     inputs:
       versionSpec: '20.x'
     displayName: 'Instalar Node.js 20'
 
-  # 2) Instalar deps + BAIXAR Chromium no workspace
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Instalar dependências (npm)…"
@@ -37,7 +35,6 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
-  # 3) Sanity: versões + listar a pasta .pw-browsers
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo PLAYWRIGHT_BROWSERS_PATH=%PLAYWRIGHT_BROWSERS_PATH%
@@ -52,7 +49,6 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
-  # 4) Executar testes (JUnit via config; HTML pelo reporter html)
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Executar testes (HTML + JUnit via config)…"
@@ -61,7 +57,6 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
-  # 5) Fallback: se falhar, publica um HTML mínimo
   - powershell: |
       $p = "$(reportDir)"
       if (!(Test-Path $p)) {
@@ -71,7 +66,6 @@ steps:
     displayName: 'Garantir pasta do relatório (fallback)'
     condition: failed()
 
-  # 6) Publicar JUnit na aba Tests
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
@@ -80,7 +74,6 @@ steps:
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
 
-  # 7) Publicar relatório HTML
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(reportDir)'
