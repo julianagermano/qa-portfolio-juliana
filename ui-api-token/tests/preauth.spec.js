@@ -1,8 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
-const TARGET_HEADER_CHECK  = 'https://postman-echo.com/headers';
-const TARGET_COOKIE_CHECK  = 'https://postman-echo.com/cookies';
-const TARGET_LOCALSTORAGE  = 'https://example.com/';
+const TARGET_HEADER_CHECK = 'https://postman-echo.com/headers';
+const TARGET_COOKIE_CHECK = 'https://postman-echo.com/cookies';
+const TARGET_LOCALSTORAGE = 'https://example.com/';
 
 const LOCALSTORAGE_KEY = 'accessToken';
 const COOKIE_NAME      = 'auth_token';
