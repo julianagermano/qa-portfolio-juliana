@@ -40,7 +40,7 @@ steps:
       dir
     displayName: 'Sanity check (versões e estrutura)'
 
-- script: |
+  - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Executar testes (HTML + JUnit via config)…"
       npx playwright test --reporter=list,html --output=test-results
