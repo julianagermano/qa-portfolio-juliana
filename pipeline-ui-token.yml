@@ -95,7 +95,7 @@ steps:
 - task: PublishPipelineArtifact@1
   condition: succeededOrFailed()
   inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
+    targetPath: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
     artifact: 'playwright-report'
   displayName: 'Publicar relatório HTML (playwright-report)'
 
@@ -103,6 +103,6 @@ steps:
 - task: PublishPipelineArtifact@1
   condition: succeededOrFailed()
   inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/screenshots'
+    targetPath: '$(Build.SourcesDirectory)/ui-api-token/screenshots'
     artifact: 'screenshots'
   displayName: 'Publicar screenshots'
