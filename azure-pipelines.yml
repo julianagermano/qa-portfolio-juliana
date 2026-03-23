@@ -1,7 +1,9 @@
 # Projeto 3 — API (Newman) – CI
 
 trigger:
-  branches: [ main ]
+  branches:
+    include:
+      - main 
   paths:
     include:
       - pipeline-api/**
