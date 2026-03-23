@@ -30,7 +30,16 @@ steps:
       echo "Instalar navegadores Playwright…"
       npx playwright install --with-deps
     displayName: 'Instalar dependências (npm + Playwright)'
-
+    
+- script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      node -v
+      npm -v
+      npx playwright --version
+      echo "Listando arquivos do projeto…"
+      dir
+    displayName: 'Sanity check (versões e estrutura)'
+    
 - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Executar testes (HTML + JUnit)…"
