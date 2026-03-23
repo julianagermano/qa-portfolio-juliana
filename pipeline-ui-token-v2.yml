@@ -24,12 +24,13 @@ steps:
       versionSpec: '20.x'
     displayName: 'Instalar Node.js 20'
 
+  # 2) Instalar deps + BAIXAR Chromium no workspace
   - script: |
       set -e
       cd "$(Build.SourcesDirectory)/$(projectDir)"
       echo "npm ci || npm install"
       npm ci || npm install
-      echo "Baixar Chromium no workspace (com deps) ..."
+      echo "Baixar Chromium no workspace (com deps)..."
       npx playwright install --with-deps chromium
       echo "Conteudo de .pw-browsers apos o download:"
       ls -la "$(Build.SourcesDirectory)/.pw-browsers" || true
@@ -37,6 +38,7 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
+  # 3) Sanity: versoes + listar .pw-browsers
   - script: |
       set -e
       cd "$(Build.SourcesDirectory)/$(projectDir)"
@@ -50,6 +52,7 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
+  # 4) Executar testes (JUnit via config; HTML pelo reporter html)
   - script: |
       set -e
       cd "$(Build.SourcesDirectory)/$(projectDir)"
@@ -58,20 +61,25 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
+  # 5) (opcional) Inspecionar pasta de resultados JUnit
   - script: |
       set -e
-      echo "Listando ui-api-token/test-results:"
-      ls -la "$(Build.SourcesDirectory)/ui-api-token/test-results" || true
+      echo "Listando $(resultsDir):"
+      ls -la "$(resultsDir)" || true
     displayName: 'Inspecionar arquivos JUnit'
 
+  # 6) Publicar Test Results (JUnit) — aceita qualquer .xml na pasta
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '$(resultsDir)/junit.xml'
+      testResultsFiles: '$(resultsDir)/*.xml'
+      searchFolder: '$(resultsDir)'
       failTaskOnFailedTests: true
+      testRunTitle: 'Projeto 6 — UI+API Token (Playwright)'
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
 
+  # 7) Publicar relatorio HTML (Playwright)
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(reportDir)'
