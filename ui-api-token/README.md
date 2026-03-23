@@ -207,8 +207,7 @@ steps:
 
 # ✅ Rodar testes (gera HTML + JUnit)
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
     npx playwright test --reporter=list,html,junit
   displayName: 'Executar testes Playwright'
 
