@@ -16,7 +16,7 @@ variables:
   projectDir: 'ui-api-token'
   reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
   resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
-  # >>> chave: torna o path de browsers visível para TODO o job
+  # browsers baixados para dentro do workspace do build
   PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
 steps:
@@ -25,7 +25,7 @@ steps:
       versionSpec: '20.x'
     displayName: 'Instalar Node.js 20'
 
-  # 1) Instalar deps e baixar Chromium NA PASTA DO WORKSPACE
+  # Instalar dependências + baixar Chromium no workspace
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Instalar dependências (npm)…"
@@ -34,7 +34,7 @@ steps:
       npx playwright install chromium
     displayName: 'Instalar dependências + Chromium (Playwright)'
 
-  # 2) Sanity: versões + confirmar que a pasta de browsers existe
+  # Sanity: versões e confirmação de browsers baixados
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       node -v
@@ -46,7 +46,7 @@ steps:
       dir
     displayName: 'Sanity check (versões, browsers e estrutura)'
 
-  # 3) Executar testes (JUnit via playwright.config.js; HTML gerado automaticamente)
+  # Executar testes (JUnit vem do playwright.config.js; HTML gerado pelo reporter html)
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Executar testes (HTML + JUnit via config)…"
@@ -76,6 +76,8 @@ steps:
       npx playwright test --reporter=list,html --output=test-results
     displayName: 'Executar testes UI + API Token'
 
+    
+ # Fallback: se os testes quebrarem, ainda assim haverá pasta para publicar
   - powershell: |
       $p = "$(reportDir)"
       if (!(Test-Path $p)) {
@@ -85,6 +87,7 @@ steps:
     displayName: 'Garantir pasta do relatório (fallback)'
     condition: failed()
 
+  # Publicar JUnit na aba Tests
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
@@ -93,6 +96,7 @@ steps:
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
 
+  # Publicar o relatório HTML como artifact
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(reportDir)'
