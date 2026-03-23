@@ -31,7 +31,7 @@ steps:
       npx playwright install --with-deps
     displayName: 'Instalar dependências (npm + Playwright)'
 
-  - script: |
+- script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
       echo "Executar testes (HTML + JUnit)…"
       npx playwright test --reporter=list,html,junit --output=test-results --reporter-option outputFile=test-results/junit.xml
