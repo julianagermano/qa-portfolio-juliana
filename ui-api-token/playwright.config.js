@@ -1,4 +1,4 @@
-// Configuração Playwright (CommonJS) — estável para CI no Azure DevOps
+// Config Playwright (CommonJS) — limpa para CI
 const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
