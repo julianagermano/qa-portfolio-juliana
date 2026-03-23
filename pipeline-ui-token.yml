@@ -21,7 +21,7 @@ steps:
 
 # 1) Diagnóstico (evita rodar fora da pasta)
 - powershell: |
-    $path = "$(Build.SourcesDirectory)/$(projectPath)"
+    $path = "$(Build.SourcesDirectory)/$(projectdir)"
     Write-Host "Build.SourcesDirectory: $(Build.SourcesDirectory)"
     Write-Host "ProjectPath: $path"
 
@@ -41,7 +41,7 @@ steps:
 # 2) Cache do NPM (APONTANDO PARA O package-lock.json DA SUBPASTA)
 - task: Cache@2
   inputs:
-    key: 'npm | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectPath)/package-lock.json'
+    key: 'npm | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
     restoreKeys: |
       npm | "$(Agent.OS)"
     path: '$(NPM_CACHE_FOLDER)'
@@ -49,7 +49,7 @@ steps:
 
 # 3) Instalar dependências
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectPath)"
+    Set-Location "$$(Build.SourcesDirectory)/$(projectdir)"
     npm config set cache "$(NPM_CACHE_FOLDER)" --global
     npm ci
   displayName: 'Instalar dependências (npm ci)'
@@ -57,7 +57,7 @@ steps:
 # 4) Cache dos browsers do Playwright
 - task: Cache@2
   inputs:
-    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectPath)/package-lock.json'
+    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
     restoreKeys: |
       playwright | "$(Agent.OS)"
     path: '$(PLAYWRIGHT_BROWSERS_PATH)'
@@ -65,14 +65,14 @@ steps:
 
 # 5) Instalar browsers do Playwright (com deps)
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectPath)"
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
     $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
     npx playwright install
   displayName: 'Instalar browsers do Playwright'
 
 # 6) Executar testes + gerar JUnit
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectPath)"
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
     $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
 
     # Gera JUnit + HTML report
@@ -85,7 +85,7 @@ steps:
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: '**/junit*.xml'
-    searchFolder: '$(Build.SourcesDirectory)/$(projectPath)'
+    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
     failTaskOnFailedTests: false
   displayName: 'Publicar resultados JUnit'
 
@@ -93,7 +93,7 @@ steps:
 - task: PublishPipelineArtifact@1
   condition: succeededOrFailed()
   inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectPath)/playwright-report'
+    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
     artifact: 'playwright-report'
   displayName: 'Publicar relatório HTML (playwright-report)'
 
@@ -101,7 +101,6 @@ steps:
 - task: PublishPipelineArtifact@1
   condition: succeededOrFailed()
   inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectPath)/screenshots'
+    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/screenshots'
     artifact: 'screenshots'
   displayName: 'Publicar screenshots'
-``
