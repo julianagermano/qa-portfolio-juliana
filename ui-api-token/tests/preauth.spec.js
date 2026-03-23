@@ -1,9 +1,11 @@
 ﻿const { test, expect } = require("@playwright/test");
 const { getAuthTokens } = require("../src/auth.api");
 
-const TARGET_HEADER_CHECK = "https://httpbin.org/headers";
-const TARGET_COOKIE_CHECK = "https://httpbin.org/cookies";
-const TARGET_LOCALSTORAGE = "https://example.com/";
+
+- const TARGET_HEADER_CHECK = 'https://httpbin.org/headers';
+- const TARGET_COOKIE_CHECK = 'https://httpbin.org/cookies';
++ const TARGET_HEADER_CHECK = 'https://postman-echo.com/headers';
++ const TARGET_COOKIE_CHECK = 'https://postman-echo.com/cookies';
 const LOCALSTORAGE_KEY = "accessToken";
 const COOKIE_NAME = "auth_token";
 
