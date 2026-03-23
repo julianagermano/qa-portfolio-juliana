@@ -1,6 +1,5 @@
 const { test, expect } = require('@playwright/test');
 
-// Alvos públicos e estáveis para CI
 const TARGET_HEADER_CHECK  = 'https://postman-echo.com/headers';
 const TARGET_COOKIE_CHECK  = 'https://postman-echo.com/cookies';
 const TARGET_LOCALSTORAGE  = 'https://example.com/';
@@ -10,7 +9,6 @@ const COOKIE_NAME      = 'auth_token';
 
 test.setTimeout(60_000);
 
-// A) Authorization header global
 test('A) Token via Authorization header global', async ({ browser }) => {
   const context = await browser.newContext({
     extraHTTPHeaders: { Authorization: 'Bearer demo-token' }
@@ -25,7 +23,6 @@ test('A) Token via Authorization header global', async ({ browser }) => {
   await context.close();
 });
 
-// B) Token no localStorage (SPA)
 test('B) Token pré-carregado no localStorage (SPA)', async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -39,7 +36,6 @@ test('B) Token pré-carregado no localStorage (SPA)', async ({ browser }) => {
   await context.close();
 });
 
-// C) Token como cookie (sessão)
 test('C) Token como cookie (sessão)', async ({ browser }) => {
   const context = await browser.newContext();
   const url = new URL(TARGET_COOKIE_CHECK);
@@ -57,8 +53,7 @@ test('C) Token como cookie (sessão)', async ({ browser }) => {
   await page.goto(TARGET_COOKIE_CHECK, { waitUntil: 'domcontentloaded' });
 
   const text = await page.locator('pre').innerText();
-  // postman-echo retorna {"cookies": {"auth_token":"demo-token"}}
-  expect(text).toMatch(new RegExp(`"${COOKIE_NAME}"\\s*:\\s*"demo-token"`));
+  expect(text).toMatch(/"auth_token"\s*:\s*"demo-token"/);
 
   await context.close();
 });
