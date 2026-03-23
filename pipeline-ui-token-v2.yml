@@ -58,6 +58,12 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
+  - script: |
+      set -e
+      echo "Listando ui-api-token/test-results:"
+      ls -la "$(Build.SourcesDirectory)/ui-api-token/test-results" || true
+    displayName: 'Inspecionar arquivos JUnit'
+
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
