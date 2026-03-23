@@ -24,7 +24,6 @@ steps:
       versionSpec: '20.x'
     displayName: 'Instalar Node.js 20'
 
-  # 2) Instalar deps + BAIXAR Chromium no workspace
   - script: |
       set -e
       cd "$(Build.SourcesDirectory)/$(projectDir)"
@@ -38,7 +37,6 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
-  # 3) Sanity: versoes + listar .pw-browsers
   - script: |
       set -e
       cd "$(Build.SourcesDirectory)/$(projectDir)"
@@ -52,7 +50,6 @@ steps:
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
-  # 4) Executar testes (JUnit via config; HTML pelo reporter html)
   - script: |
       set -e
       cd "$(Build.SourcesDirectory)/$(projectDir)"
@@ -60,43 +57,37 @@ steps:
     displayName: 'Executar testes UI + API Token'
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
-  
-  - script: |
-      set -e
-      echo "Listando ui-api-token/test-results:"
-      ls -la "$(Build.SourcesDirectory)/ui-api-token/test-results" || true
-      echo "Procurando *-results*.xml no workspace:"
-      find "$(Build.SourcesDirectory)" -maxdepth 3 -name "*.xml" -print || true
-    displayName: 'Inspecionar arquivos JUnit'
 
-  # 5) (opcional) Inspecionar pasta de resultados JUnit
+  # (NOVO) Inspecionar SEMPRE o diretório de resultados JUnit
   - script: |
       set -e
       echo "Listando $(resultsDir):"
       ls -la "$(resultsDir)" || true
+      echo "Procurando XML no workspace (3 niveis):"
+      find "$(Build.SourcesDirectory)" -maxdepth 3 -name "*.xml" -print || true
     displayName: 'Inspecionar arquivos JUnit'
-    
-  # 5) Garantir pasta do relatorio (fallback)
-  - script: |
-      mkdir -p "$(Build.SourcesDirectory)/ui-api-token/playwright-report"
-      echo "<html><body><h3>Relatorio nao gerado porque os testes falharam.</h3></body></html>" > "$(Build.SourcesDirectory)/ui-api-token/playwright-report/index.html"
-    displayName: 'Garantir pasta do relatorio (fallback)'
-    condition: failed()   # roda apenas se o step anterior falhar
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
-      ArtifactName: 'playwright-report-ui-token'
-      publishLocation: 'Container'
-    condition: always()
-    displayName: 'Publicar relatorio HTML (Playwright)'
+  # Fallback do HTML quando os testes falham (evita erro de PathToPublish)
+  - script: |
+      mkdir -p "$(reportDir)"
+      echo "<html><body><h3>Relatorio nao gerado porque os testes falharam.</h3></body></html>" > "$(reportDir)/index.html"
+    displayName: 'Garantir pasta do relatorio (fallback)'
+    condition: failed()
 
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '$(Build.SourcesDirectory)/ui-api-token/test-results/*.xml'
+      testResultsFiles: '$(resultsDir)/*.xml'
       searchFolder: '$(Build.SourcesDirectory)'
       failTaskOnFailedTests: true
       testRunTitle: 'Projeto 6 — UI+API Token (Playwright)'
     condition: succeededOrFailed()
     displayName: 'Publicar Test Results (JUnit)'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(reportDir)'
+      ArtifactName: 'playwright-report-ui-token'
+      publishLocation: 'Container'
+    condition: always()
+    displayName: 'Publicar relatorio HTML (Playwright)'
