@@ -22,8 +22,9 @@ steps:
   # 1) Node 20
   - task: NodeTool@0
     inputs:
+      versionSource: 'fromFile'
       versionSpec: '20.x'
-    displayName: 'Instalar Node.js 20'
+      displayName: 'Instalar Node.js 20'
 
   # 2) Instalar deps + BAIXAR Chromium no workspace
   - script: |
