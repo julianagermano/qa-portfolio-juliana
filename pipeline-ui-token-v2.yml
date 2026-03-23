@@ -1,4 +1,4 @@
-# Projeto 6 — UI + API Token (Playwright) — v2 limpa
+# Projeto 6 - UI + API Token (Playwright) - v2 limpa
 
 trigger:
   branches:
@@ -16,7 +16,6 @@ variables:
   projectDir: 'ui-api-token'
   reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
   resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
-  # Baixar/usar browsers DENTRO do workspace (não no AppData do agente)
   PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
 steps:
@@ -27,11 +26,13 @@ steps:
 
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
-      echo "Instalar dependências (npm)…"
-      npm install
-      echo "Instalar Playwright Chromium (workspace)…"
-      npx playwright install chromium
-    displayName: 'Instalar dependências + Chromium (Playwright)'
+      echo Instalar dependencias npm...
+      npm ci || npm install
+      echo Baixar Playwright Chromium no workspace...
+      npx playwright install --with-deps chromium
+      echo Conferindo pasta de browsers apos o download...
+      dir "$(Build.SourcesDirectory)\.pw-browsers"
+    displayName: 'Instalar dependencias + Chromium (Playwright)'
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
@@ -41,17 +42,17 @@ steps:
       node -v
       npm -v
       npx playwright --version
-      echo "Listando pasta de browsers local…"
+      echo Listando browsers (cmd)...
       dir "$(Build.SourcesDirectory)\.pw-browsers"
-      echo "Listando estrutura do projeto…"
-      dir
-    displayName: 'Sanity check (versões, browsers e estrutura)'
+      echo Listando browsers (PowerShell)...
+      powershell -NoProfile -Command "Get-ChildItem -Recurse '$(Build.SourcesDirectory)\.pw-browsers' | Select-Object -First 20 | Format-List; exit $LASTEXITCODE"
+    displayName: 'Sanity check (versoes, browsers e estrutura)'
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
-      echo "Executar testes (HTML + JUnit via config)…"
+      echo Executar testes (HTML + JUnit via config)...
       npx playwright test --reporter=list,html --output=test-results
     displayName: 'Executar testes UI + API Token'
     env:
@@ -61,9 +62,9 @@ steps:
       $p = "$(reportDir)"
       if (!(Test-Path $p)) {
         New-Item -ItemType Directory -Force -Path $p | Out-Null
-        '<html><body><h3>Relatório não gerado porque os testes falharam.</h3></body></html>' | Out-File "$p\index.html" -Encoding UTF8
+        '<html><body><h3>Relatorio nao gerado porque os testes falharam.</h3></body></html>' | Out-File "$p\index.html" -Encoding UTF8
       }
-    displayName: 'Garantir pasta do relatório (fallback)'
+    displayName: 'Garantir pasta do relatorio (fallback)'
     condition: failed()
 
   - task: PublishTestResults@2
@@ -80,4 +81,4 @@ steps:
       ArtifactName: 'playwright-report-ui-token'
       publishLocation: 'Container'
     condition: always()
-    displayName: 'Publicar relatório HTML (Playwright)'
+    displayName: 'Publicar relatorio HTML (Playwright)'
