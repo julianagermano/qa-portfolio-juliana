@@ -1,3 +1,4 @@
+// ui-api-token/tests/preauth.spec.js
 const { test, expect } = require('@playwright/test');
 
 const LOCALSTORAGE_KEY = 'accessToken';
@@ -5,7 +6,7 @@ const COOKIE_NAME      = 'auth_token';
 
 test.setTimeout(60_000);
 
-// A) Header Authorization (sem internet) — intercepta a 1ª navegação e verifica o header
+// A) Header Authorization (offline): intercepta 1a navegação e verifica o header
 test('A) Token via Authorization header global (offline)', async ({ browser }) => {
   const context = await browser.newContext({
     extraHTTPHeaders: { Authorization: 'Bearer demo-token' }
@@ -17,17 +18,17 @@ test('A) Token via Authorization header global (offline)', async ({ browser }) =
     const req = route.request();
     const headers = req.headers();
     capturedAuth = headers['authorization'] || headers['Authorization'];
-    // responde localmente, sem sair pra internet
+    // responde localmente, sem sair para a internet
     await route.fulfill({ status: 200, body: '<html><body>ok</body></html>' });
   });
 
-  await page.goto('https://example.com'); // será interceptado e atendido localmente
+  await page.goto('https://offline.local'); // será interceptado
   expect(capturedAuth).toBeTruthy();
   expect(capturedAuth).toMatch(/Bearer\s+demo-token/i);
   await context.close();
 });
 
-// B) LocalStorage (sem internet)
+// B) LocalStorage (offline)
 test('B) Token pré-carregado no localStorage (offline)', async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -40,7 +41,7 @@ test('B) Token pré-carregado no localStorage (offline)', async ({ browser }) =>
   await context.close();
 });
 
-// C) Cookie de sessão (sem internet)
+// C) Cookie de sessão (offline)
 test('C) Token como cookie (offline)', async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
