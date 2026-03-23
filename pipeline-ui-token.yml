@@ -9,7 +9,7 @@ trigger:
       - ui-api-token/**
       - pipeline-ui-token.yml
 
-pool:
+pool: 
   vmImage: 'windows-latest'
 
 variables:
