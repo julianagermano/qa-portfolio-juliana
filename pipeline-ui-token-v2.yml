@@ -1,0 +1,90 @@
+# Projeto 6 — UI + API Token (Playwright) — v2 limpa
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - ui-api-token/**
+      - pipeline-ui-token-v2.yml
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  projectDir: 'ui-api-token'
+  reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
+  resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
+  # Baixar/usar browsers DENTRO do workspace (não no AppData do agente)
+  PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
+
+steps:
+  # 1) Node
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Instalar Node.js 20'
+
+  # 2) Instalar deps + BAIXAR Chromium no workspace
+  - script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo "Instalar dependências (npm)…"
+      npm install
+      echo "Instalar Playwright Chromium (workspace)…"
+      npx playwright install chromium
+    displayName: 'Instalar dependências + Chromium (Playwright)'
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
+
+  # 3) Sanity: versões + listar a pasta .pw-browsers
+  - script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo PLAYWRIGHT_BROWSERS_PATH=%PLAYWRIGHT_BROWSERS_PATH%
+      node -v
+      npm -v
+      npx playwright --version
+      echo "Listando pasta de browsers local…"
+      dir "$(Build.SourcesDirectory)\.pw-browsers"
+      echo "Listando estrutura do projeto…"
+      dir
+    displayName: 'Sanity check (versões, browsers e estrutura)'
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
+
+  # 4) Executar testes (JUnit via config; HTML pelo reporter html)
+  - script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo "Executar testes (HTML + JUnit via config)…"
+      npx playwright test --reporter=list,html --output=test-results
+    displayName: 'Executar testes UI + API Token'
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
+
+  # 5) Fallback: se falhar, publica um HTML mínimo
+  - powershell: |
+      $p = "$(reportDir)"
+      if (!(Test-Path $p)) {
+        New-Item -ItemType Directory -Force -Path $p | Out-Null
+        '<html><body><h3>Relatório não gerado porque os testes falharam.</h3></body></html>' | Out-File "$p\index.html" -Encoding UTF8
+      }
+    displayName: 'Garantir pasta do relatório (fallback)'
+    condition: failed()
+
+  # 6) Publicar JUnit na aba Tests
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '$(resultsDir)/junit.xml'
+      failTaskOnFailedTests: true
+    condition: succeededOrFailed()
+    displayName: 'Publicar Test Results (JUnit)'
+
+  # 7) Publicar relatório HTML
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(reportDir)'
+      ArtifactName: 'playwright-report-ui-token'
+      publishLocation: 'Container'
+    condition: always()
+    displayName: 'Publicar relatório HTML (Playwright)'
