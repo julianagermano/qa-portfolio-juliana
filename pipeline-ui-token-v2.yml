@@ -10,7 +10,7 @@ trigger:
       - pipeline-ui-token-v2.yml
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
   projectDir: 'ui-api-token'
@@ -25,47 +25,38 @@ steps:
     displayName: 'Instalar Node.js 20'
 
   - script: |
-      cd $(Build.SourcesDirectory)/$(projectDir)
-      echo Instalar dependencias npm...
+      set -e
+      cd "$(Build.SourcesDirectory)/$(projectDir)"
+      echo "npm ci || npm install"
       npm ci || npm install
-      echo Baixar Playwright Chromium no workspace...
+      echo "Baixar Chromium no workspace (com deps) ..."
       npx playwright install --with-deps chromium
-      echo Conferindo pasta de browsers apos o download...
-      dir "$(Build.SourcesDirectory)\.pw-browsers"
+      echo "Conteudo de .pw-browsers apos o download:"
+      ls -la "$(Build.SourcesDirectory)/.pw-browsers" || true
     displayName: 'Instalar dependencias + Chromium (Playwright)'
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
   - script: |
-      cd $(Build.SourcesDirectory)/$(projectDir)
-      echo PLAYWRIGHT_BROWSERS_PATH=%PLAYWRIGHT_BROWSERS_PATH%
+      set -e
+      cd "$(Build.SourcesDirectory)/$(projectDir)"
+      echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH"
       node -v
       npm -v
       npx playwright --version
-      echo Listando browsers (cmd)...
-      dir "$(Build.SourcesDirectory)\.pw-browsers"
-      echo Listando browsers (PowerShell)...
-      powershell -NoProfile -Command "Get-ChildItem -Recurse '$(Build.SourcesDirectory)\.pw-browsers' | Select-Object -First 20 | Format-List; exit $LASTEXITCODE"
+      echo "Listando .pw-browsers:"
+      ls -la "$(Build.SourcesDirectory)/.pw-browsers" || true
     displayName: 'Sanity check (versoes, browsers e estrutura)'
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
   - script: |
-      cd $(Build.SourcesDirectory)/$(projectDir)
-      echo Executar testes (HTML + JUnit via config)...
+      set -e
+      cd "$(Build.SourcesDirectory)/$(projectDir)"
       npx playwright test --reporter=list,html --output=test-results
     displayName: 'Executar testes UI + API Token'
     env:
       PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
-
-  - powershell: |
-      $p = "$(reportDir)"
-      if (!(Test-Path $p)) {
-        New-Item -ItemType Directory -Force -Path $p | Out-Null
-        '<html><body><h3>Relatorio nao gerado porque os testes falharam.</h3></body></html>' | Out-File "$p\index.html" -Encoding UTF8
-      }
-    displayName: 'Garantir pasta do relatorio (fallback)'
-    condition: failed()
 
   - task: PublishTestResults@2
     inputs:
