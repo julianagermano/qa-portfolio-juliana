@@ -17,11 +17,49 @@ variables:
   reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
   resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
 
+
 steps:
   - task: NodeTool@0
     inputs:
       versionSpec: '20.x'
     displayName: 'Instalar Node.js 20'
+
+    
+# 1) Instalar deps e baixar o Chromium para uma pasta DENTRO do workspace
+  - script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo "Instalar dependências (npm)…"
+      npm install
+      echo "Instalar Playwright Chromium para pasta local do repositório…"
+      npx playwright install chromium
+    displayName: 'Instalar dependências + Chromium (Playwright)'
+    env:
+      # Browsers ficam em $(Build.SourcesDirectory)\.pw-browsers (persistem dentro do workspace do job)
+      PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)\.pw-browsers'
+
+  # 2) Sanity (ver versões e garantir que o browser está presente na pasta local)
+  - script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      node -v
+      npm -v
+      npx playwright --version
+      echo "Listando pasta de browsers local…"
+      dir "$(Build.SourcesDirectory)\.pw-browsers"
+      echo "Listando estrutura do projeto…"
+      dir
+    displayName: 'Sanity check (versões, browsers e estrutura)'
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)\.pw-browsers'
+
+  # 3) Executar testes (JUnit vem do playwright.config.js; HTML é gerado automaticamente)
+  - script: |
+      cd $(Build.SourcesDirectory)/$(projectDir)
+      echo "Executar testes (HTML + JUnit via config)…"
+      npx playwright test --reporter=list,html --output=test-results
+    displayName: 'Executar testes UI + API Token'
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)\.pw-browsers'
+
 
   - script: |
       cd $(Build.SourcesDirectory)/$(projectDir)
