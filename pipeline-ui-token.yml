@@ -6,7 +6,7 @@ pool:
 
 
 variables:
-  projectdir: 'ui-api-token'
+  projectdir: 'qa-portfolio-juliana/ui-api-token'
   projectPath: 'qa-portfolio-juliana/ui-api-token'
   NODE_VERSION: '20.x'
   NPM_CACHE_FOLDER: '$(Pipeline.Workspace)/.npm'
