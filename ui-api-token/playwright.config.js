@@ -1,11 +1,13 @@
-﻿const { defineConfig } = require('@playwright/test');
+// Config CJS estável para CI (Playwright)
+const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
   timeout: 60_000,
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }]
+    ['html',  { outputFolder: 'playwright-report', open: 'never' }],
+    ['junit', { outputFile: 'test-results/junit.xml' }]
   ],
   use: {
     headless: true,
