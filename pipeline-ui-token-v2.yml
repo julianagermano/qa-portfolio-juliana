@@ -13,10 +13,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  projectDir: 'ui-api-token'
-  reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
-  resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
-  PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
+    projectDir: 'ui-api-token'
+    reportDir: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
+    resultsDir: '$(Build.SourcesDirectory)/ui-api-token/test-results'
+    PLAYWRIGHT_BROWSERS_PATH: '$(Build.SourcesDirectory)/.pw-browsers'
 
 steps:
   # 1) Node 20
