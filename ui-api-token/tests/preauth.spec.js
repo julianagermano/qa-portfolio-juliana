@@ -1,4 +1,5 @@
 // ui-api-token/tests/preauth.spec.js
+// Testes offline: sem internet, validam header Authorization, localStorage e cookie.
 const { test, expect } = require('@playwright/test');
 
 const LOCALSTORAGE_KEY = 'accessToken';
@@ -6,7 +7,7 @@ const COOKIE_NAME      = 'auth_token';
 
 test.setTimeout(60_000);
 
-// A) Header Authorization (offline): intercepta 1a navegação e verifica o header
+// A) Header Authorization (offline) — intercepta a navegação e valida o header
 test('A) Token via Authorization header global (offline)', async ({ browser }) => {
   const context = await browser.newContext({
     extraHTTPHeaders: { Authorization: 'Bearer demo-token' }
@@ -18,7 +19,7 @@ test('A) Token via Authorization header global (offline)', async ({ browser }) =
     const req = route.request();
     const headers = req.headers();
     capturedAuth = headers['authorization'] || headers['Authorization'];
-    // responde localmente, sem sair para a internet
+    // Responde localmente (sem rede)
     await route.fulfill({ status: 200, body: '<html><body>ok</body></html>' });
   });
 
