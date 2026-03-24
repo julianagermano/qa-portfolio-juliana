@@ -81,6 +81,19 @@ steps:
     New-Item -ItemType Directory -Force "test-results" | Out-Null
     New-Item -ItemType Directory -Force "playwright-report" | Out-Null
 
+    - powershell: |
+    Write-Host "BASE_URL=$env:BASE_URL"
+    try {
+      $resp = Invoke-WebRequest -Uri $env:BASE_URL -UseBasicParsing -TimeoutSec 30
+      Write-Host "Status: $($resp.StatusCode)"
+    } catch {
+      Write-Error "Ambiente inacessível (DNS/VPN/URL). Erro: $($_.Exception.Message)"
+      exit 1
+    }
+  displayName: "Health Check - verificar acesso ao ambiente"
+  env:
+    BASE_URL: $(BASE_URL)
+
     npm ci
     npx playwright install
 
