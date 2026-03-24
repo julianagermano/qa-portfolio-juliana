@@ -76,6 +76,20 @@ steps:
     Write-Host " - $(Build.SourcesDirectory)/ui-api-token/playwright-report"
   displayName: "Criar pastas de evidência (test-results e playwright-report)"
 
+- powershell: |
+    # 1) Entrar na pasta do projeto (usando projectdir)
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+
+    # 2) Criar as pastas de evidência (se já existirem, não dá erro)
+    New-Item -ItemType Directory -Force "test-results" | Out-Null
+    New-Item -ItemType Directory -Force "playwright-report" | Out-Null
+
+    # 3) Log didático: mostrar caminhos completos
+    Write-Host "✅ Pastas garantidas:"
+    Write-Host " - $(Build.SourcesDirectory)/$(projectdir)/test-results"
+    Write-Host " - $(Build.SourcesDirectory)/$(projectdir)/playwright-report"
+  displayName: "PASSO D-1 - Criar pastas de evidência"
+
 # Instalar browsers do Playwright (fix padrão)
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/ui-api-token"
