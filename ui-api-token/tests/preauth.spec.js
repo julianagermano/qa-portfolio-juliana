@@ -23,6 +23,28 @@ test('A) Token via Authorization header global (offline)', async ({ browser }) =
     await route.fulfill({ status: 200, body: '<html><body>ok</body></html>' });
   });
 
+  test('Token pré-carregado no localStorage (Offline)', async ({ browser }) => {
+  const context = await browser.newContext();
+
+  // Injeta o token ANTES de qualquer página carregar
+  await context.addInitScript((token) => {
+    window.localStorage.setItem('token', token);
+  }, process.env.API_TOKEN);
+
+  const page = await context.newPage();
+
+  // Navega online para garantir origin válido e carregar app
+  await page.goto(process.env.BASE_URL, { waitUntil: 'domcontentloaded' });
+
+  // Agora sim corta a rede
+  await context.setOffline(true);
+
+  // valida offline
+  await page.reload({ waitUntil: 'domcontentloaded' });
+
+  // asserts...
+});
+
   await page.goto('https://offline.local'); // será interceptado
   expect(capturedAuth).toBeTruthy();
   expect(capturedAuth).toMatch(/Bearer\s+demo-token/i);
