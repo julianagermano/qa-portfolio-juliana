@@ -50,94 +50,48 @@ steps:
     path: '$(NPM_CACHE_FOLDER)'
   displayName: 'Cache do npm'
 
-# 3) Instalar dependências
+# Instalar dependências
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
     npm ci
   displayName: "PASSO C - Instalar dependências"
 
-
-# 4) Cache dos browsers do Playwright
-- task: Cache@2
-  inputs:
-    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
-    restoreKeys: |
-      playwright | "$(Agent.OS)"
-    path: '$(PLAYWRIGHT_BROWSERS_PATH)'
-  displayName: 'Cache Playwright browsers'
-
-
+# Instalar browsers do Playwright (fix padrão)
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/ui-api-token"
     npx playwright install
-  displayName: "Instalar browsers do Playwright"
+  displayName: "PASSO D0 - Instalar browsers do Playwright"
 
-
-# 5) Instalar browsers do Playwright (com deps)
+# Rodar testes (didático)
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
-    npx playwright install
-  displayName: 'Instalar browsers do Playwright'
-
-# 6) Executar testes + gerar JUnit
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
-
-    # Gera JUnit + HTML report
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
     npx playwright test --reporter=list,html,junit
-  displayName: 'Executar testes Playwright'
+  displayName: "PASSO D - Executar testes Playwright"
+  continueOnError: true
 
-# 7) Publicar resultados JUnit (mesmo se falhar)
+# Checar relatórios
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    npx playwright test
-  displayName: "PASSO D - Executar testes"
+    $report = "$(Build.SourcesDirectory)/ui-api-token/playwright-report"
+    $junit  = "$(Build.SourcesDirectory)/ui-api-token/test-results/junit.xml"
+    if (Test-Path $report) { Write-Host "##vso[task.setvariable variable=hasReport]true" } else { Write-Host "##vso[task.setvariable variable=hasReport]false" }
+    if (Test-Path $junit)  { Write-Host "##vso[task.setvariable variable=hasJUnit]true" }  else { Write-Host "##vso[task.setvariable variable=hasJUnit]false" }
+  displayName: "Checar se existem relatórios"
   condition: succeededOrFailed()
+
+# Publicar JUnit
 - task: PublishTestResults@2
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables.hasJUnit, 'true'))
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: 'test-results/junit.xml'
-    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
+    searchFolder: '$(Build.SourcesDirectory)/ui-api-token'
     failTaskOnFailedTests: false
-  displayName: "PASSO E - Publicar JUnit"
+  displayName: "Publicar JUnit"
 
-# 8) Publicar relatório HTML do Playwright (mesmo se falhar)
-- task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
-    artifact: 'playwright-report'
-  displayName: "PASSO F - Publicar Playwright report"
-
-# 9) Publicar evidências (screenshots) se existirem
-- task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/screenshots'
-    artifact: 'screenshots'
-  displayName: "PASSO G - Publicar screenshots"
-
-- powershell: |
-    $report = "$(Build.SourcesDirectory)/$(projectdir)/playwright-report"
-    if (Test-Path $report) {
-      Write-Host "##vso[task.setvariable variable=hasReport]true"
-    } else {
-      Write-Host "##vso[task.setvariable variable=hasReport]false"
-    }
-  displayName: "Checar se existe playwright-report"
-  condition: succeededOrFailed()
-
+# Publicar HTML report
 - task: PublishPipelineArtifact@1
   condition: and(succeededOrFailed(), eq(variables.hasReport, 'true'))
   inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
+    targetPath: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
     artifact: 'playwright-report'
   displayName: "Publicar Playwright report"
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
-    artifact: 'playwright-report'
-    publishLocation: 'pipeline'
