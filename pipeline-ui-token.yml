@@ -1,10 +1,6 @@
 trigger:
 - main
 
-pool:
-  vmImage: 'windows-latest'
-
-
 variables:
   projectdir: 'qa-portfolio-juliana/ui-api-token'
   projectPath: 'qa-portfolio-juliana/ui-api-token'
@@ -12,10 +8,13 @@ variables:
   NPM_CACHE_FOLDER: '$(Pipeline.Workspace)/.npm'
   PLAYWRIGHT_BROWSERS_PATH: '$(Pipeline.Workspace)/.pw-browsers'
 
+pool:
+  vmImage: 'windows-latest'
+
 steps:
 - checkout: self
 
-  - powershell: |
+- powershell: |
     Write-Host "Raiz do repositório:"
     Get-ChildItem "$(Build.SourcesDirectory)" -Force
 
@@ -33,13 +32,38 @@ steps:
     Get-ChildItem -Force
   displayName: "PASSO B - Entrar na pasta ui-api-token"
 
-  - powershell: |
+- powershell: |
     Set-Location "$(Build.SourcesDirectory)/ui-api-token"
     npm ci
-  displayName: "PASSO C - Instalar dependências (npm ci)"
+  displayName: "PASSO C - Instalar dependências"
 
-  - powershell: |
+- powershell: |
     Set-Location "$(Build.SourcesDirectory)/ui-api-token"
     npx playwright test
-  displayName: "PASSO D - Executar testes Playwright"
+  displayName: "PASSO D - Executar testes"
   condition: succeededOrFailed()
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'test-results/junit.xml'
+    searchFolder: '$(Build.SourcesDirectory)/ui-api-token'
+    failTaskOnFailedTests: false
+  displayName: "PASSO E - Publicar JUnit"
+
+- task: PublishPipelineArtifact@1
+  condition: succeededOrFailed()
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
+    artifact: 'playwright-report'
+  displayName: "PASSO F - Publicar relatório HTML"
+
+- task: PublishPipelineArtifact@1
+  condition: succeededOrFailed()
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/ui-api-token/screenshots'
+    artifact: 'screenshots'
+  displayName: "PASSO G - Publicar screenshots"
+
+
