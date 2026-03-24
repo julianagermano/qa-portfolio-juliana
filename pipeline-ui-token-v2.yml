@@ -107,7 +107,7 @@ steps:
   continueOnError: true
 
 # Exemplo: checar se token veio (não printa o token)
-    if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
+  if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
 
     npx playwright test --reporter=list,html,junit
   displayName: "PASSO D - Executar testes Playwright"
