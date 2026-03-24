@@ -63,11 +63,15 @@ steps:
   displayName: "PASSO D0 - Instalar browsers do Playwright"
 
 # Rodar testes (didático)
+
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token
+    $env:BASE_URL = "$(BASE_URL)"
+    $env:API_TOKEN = "$(API_TOKEN)"
     npx playwright test
   displayName: "PASSO D - Executar testes Playwright"
   continueOnError: true
+
 
 # Checar relatórios
 - powershell: |
