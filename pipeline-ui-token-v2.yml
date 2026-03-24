@@ -129,3 +129,8 @@ steps:
     targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
     artifact: 'playwright-report'
   displayName: "Publicar Playwright report"
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
+    artifact: 'playwright-report'
+    publishLocation: 'pipeline'
