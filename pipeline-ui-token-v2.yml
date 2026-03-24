@@ -60,7 +60,24 @@ steps:
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/ui-api-token"
     npx playwright install
-  displayName: "PASSO D0 - Instalar browsers do Playwright"
+- task: PowerShell@2
+  displayName: 'PASSO D - Executar testes Playwright'
+  inputs:
+      targetType: 'inline'
+      script: |
+        node -v
+        npm -v
+
+        npm ci
+        npx playwright install --with-deps
+
+        # Só para validar que chegou (NÃO printar o token!)
+        if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
+
+        npx playwright test --reporter=line
+  env:
+      API_TOKEN: $(API_TOKEN)
+
 
 # Rodar testes (didático)
 
