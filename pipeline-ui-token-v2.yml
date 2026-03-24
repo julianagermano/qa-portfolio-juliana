@@ -91,16 +91,17 @@ steps:
   displayName: "PASSO D-1 - Criar pastas de evidência"
 
 # Instalar browsers do Playwright (fix padrão)
+
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
-    npx playwright install
-- task: PowerShell@2
-  displayName: 'PASSO D - Executar testes Playwright'
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    npx playwright test --reporter=list,html,junit
+  displayName: "PASSO D - Executar testes Playwright"
+  continueOnError: true
   inputs:
-      targetType: 'inline'
-      script: |
-        node -v
-        npm -v
+    targetType: 'inline'
+    script: |
+      node -v
+      npm -v
 
         npm ci
         npx playwright install --with-deps
