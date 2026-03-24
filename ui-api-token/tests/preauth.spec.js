@@ -37,6 +37,9 @@ test('B) Token pré-carregado no localStorage (offline)', async ({ browser }) =>
   await page.addInitScript(([k, v]) => localStorage.setItem(k, v), [LOCALSTORAGE_KEY, 'demo-token']);
   await page.setContent('<html><body><h1>offline</h1></body></html>');
 
+  console.log('URL atual antes do localStorage:', page.url());
+  await page.screenshot({ path: 'debug-before-localstorage.png', fullPage: true });
+
   const stored = await page.evaluate(k => localStorage.getItem(k), LOCALSTORAGE_KEY);
   expect(stored).toBe('demo-token');
   await context.close();
