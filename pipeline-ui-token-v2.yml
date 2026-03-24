@@ -67,10 +67,14 @@ steps:
 
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/ui-api-token"
+
     New-Item -ItemType Directory -Force "test-results" | Out-Null
     New-Item -ItemType Directory -Force "playwright-report" | Out-Null
-    Write-Host "Pastas garantidas: test-results e playwright-report"
-  displayName: "PASSO D-1 - Criar pastas de evidência"
+
+    Write-Host "✅ Pastas criadas/garantidas:"
+    Write-Host " - $(Build.SourcesDirectory)/ui-api-token/test-results"
+    Write-Host " - $(Build.SourcesDirectory)/ui-api-token/playwright-report"
+  displayName: "Criar pastas de evidência (test-results e playwright-report)"
 
 # Instalar browsers do Playwright (fix padrão)
 - powershell: |
