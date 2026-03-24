@@ -57,12 +57,12 @@ steps:
   displayName: "PASSO C - Instalar dependências"
 
 - powershell: |
-    $tr = "$(Build.SourcesDirectory)/ui-api-token/test-results"
-    $pr = "$(Build.SourcesDirectory)/ui-api-token/playwright-report"
+    $tr = "$(Build.SourcesDirectory)/$(projectdir)/test-results"
+    $pr = "$(Build.SourcesDirectory)/$(projectdir)/playwright-report"
 
     if (Test-Path $tr) { Write-Host "##vso[task.setvariable variable=hasTR]true" } else { Write-Host "##vso[task.setvariable variable=hasTR]false" }
     if (Test-Path $pr) { Write-Host "##vso[task.setvariable variable=hasPR]true" } else { Write-Host "##vso[task.setvariable variable=hasPR]false" }
-  displayName: "PASSO D-2 - Checar evidências"
+  displayName: "Checar pastas de evidência"
   condition: succeededOrFailed()
 
 - powershell: |
@@ -77,41 +77,23 @@ steps:
   displayName: "Criar pastas de evidência (test-results e playwright-report)"
 
 - powershell: |
-    # 1) Entrar na pasta do projeto (usando projectdir)
     Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
 
-    # 2) Criar as pastas de evidência (se já existirem, não dá erro)
+    # garante pastas de evidência
     New-Item -ItemType Directory -Force "test-results" | Out-Null
     New-Item -ItemType Directory -Force "playwright-report" | Out-Null
 
-    # 3) Log didático: mostrar caminhos completos
-    Write-Host "✅ Pastas garantidas:"
-    Write-Host " - $(Build.SourcesDirectory)/$(projectdir)/test-results"
-    Write-Host " - $(Build.SourcesDirectory)/$(projectdir)/playwright-report"
-  displayName: "PASSO D-1 - Criar pastas de evidência"
+    npm ci
+    npx playwright install
 
-# Instalar browsers do Playwright (fix padrão)
+    # Exemplo: checar se token veio (não printa o token)
+    if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
 
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
     npx playwright test --reporter=list,html,junit
   displayName: "PASSO D - Executar testes Playwright"
-  continueOnError: true
-  inputs:
-    targetType: 'inline'
-    script: |
-      node -v
-      npm -v
-
-        npm ci
-        npx playwright install --with-deps
-
-        # Só para validar que chegou (NÃO printar o token!)
-        if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
-
-        npx playwright test --reporter=line
   env:
-      API_TOKEN: $(API_TOKEN)
+    API_TOKEN: $(API_TOKEN)
+  continueOnError: true
 
 # Rodar testes (didático)
 - powershell: |
@@ -141,16 +123,14 @@ steps:
 
 # Publicar HTML report
 - task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables.hasTR, 'true'))
   inputs:
-    targetPath: '$(Build.SourcesDirectory)/ui-api-token/test-results'
+    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/test-results'
     artifact: 'test-results'
   displayName: "Publicar evidências (test-results)"
-
-
 - task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables.hasPR, 'true'))
   inputs:
-    targetPath: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
+    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
     artifact: 'playwright-report'
-  displayName: "Publicar relatório HTML (playwright-report)"
+  displayName: "Publicar relatório (playwright-report)"
