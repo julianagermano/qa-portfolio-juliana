@@ -56,6 +56,13 @@ steps:
     npm ci
   displayName: "PASSO C - Instalar dependências"
 
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
+    New-Item -ItemType Directory -Force "test-results" | Out-Null
+    New-Item -ItemType Directory -Force "playwright-report" | Out-Null
+    Write-Host "Pastas garantidas: test-results e playwright-report"
+  displayName: "PASSO D-1 - Criar pastas de evidência"
+
 # Instalar browsers do Playwright (fix padrão)
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/ui-api-token"
