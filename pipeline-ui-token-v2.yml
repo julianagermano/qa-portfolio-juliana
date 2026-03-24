@@ -85,17 +85,12 @@ steps:
   env:
       API_TOKEN: $(API_TOKEN)
 
-
 # Rodar testes (didático)
-
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/ui-api-token
-    $env:BASE_URL = "$(BASE_URL)"
-    $env:API_TOKEN = "$(API_TOKEN)"
-    npx playwright test
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
+    npx playwright test --reporter=list,html,junit
   displayName: "PASSO D - Executar testes Playwright"
   continueOnError: true
-
 
 # Checar relatórios
 - powershell: |
