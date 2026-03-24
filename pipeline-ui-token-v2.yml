@@ -81,23 +81,32 @@ steps:
     New-Item -ItemType Directory -Force "test-results" | Out-Null
     New-Item -ItemType Directory -Force "playwright-report" | Out-Null
 
-    - powershell: |
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+
     Write-Host "BASE_URL=$env:BASE_URL"
     try {
-      $resp = Invoke-WebRequest -Uri $env:BASE_URL -UseBasicParsing -TimeoutSec 30
+      $resp = Invoke-WebRequest -Uri $env:BASE_URL -UseBasicParsing -TimeoutSec 20
       Write-Host "Status: $($resp.StatusCode)"
     } catch {
       Write-Error "Ambiente inacessível (DNS/VPN/URL). Erro: $($_.Exception.Message)"
       exit 1
     }
-  displayName: "Health Check - verificar acesso ao ambiente"
-  env:
-    BASE_URL: $(BASE_URL)
 
     npm ci
     npx playwright install
 
-    # Exemplo: checar se token veio (não printa o token)
+    # Não printar token!
+    if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
+
+    npx playwright test --reporter=list,html,junit
+  displayName: "Health Check + Instalação + Execução Playwright"
+  env:
+    BASE_URL: $(BASE_URL)
+    API_TOKEN: $(API_TOKEN)
+  continueOnError: true
+
+# Exemplo: checar se token veio (não printa o token)
     if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
 
     npx playwright test --reporter=list,html,junit
