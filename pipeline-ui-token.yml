@@ -14,95 +14,32 @@ variables:
 
 steps:
 - checkout: self
-  fetchDepth: 1
 
-- task: NodeTool@0
-  inputs:
-    versionSpec: '$(NODE_VERSION)'
-  displayName: 'Usar Node.js $(NODE_VERSION)'
+  - powershell: |
+    Write-Host "Raiz do repositório:"
+    Get-ChildItem "$(Build.SourcesDirectory)" -Force
 
-# 1) Diagnóstico (evita rodar fora da pasta)
-- powershell: |
-    $path = "$(Build.SourcesDirectory)/$(projectdir)"
-    Write-Host "Build.SourcesDirectory: $(Build.SourcesDirectory)"
-    Write-Host "ProjectPath: $path"
+    $proj = "$(Build.SourcesDirectory)/ui-api-token"
+    Write-Host "Tentando entrar em: $proj"
 
-    if (!(Test-Path $path)) {
-      Write-Error "❌ Pasta do projeto não encontrada: $path"
-      Write-Host "Conteúdo da raiz do repo:"
-      Get-ChildItem "$(Build.SourcesDirectory)" -Force
+    if (!(Test-Path $proj)) {
+      Write-Error "❌ Pasta ui-api-token NÃO encontrada"
       exit 1
     }
 
-    Set-Location $path
-    Write-Host "✅ Pasta atual: $((Get-Location).Path)"
-    Write-Host "Arquivos:"
+    Set-Location $proj
+    Write-Host "✅ Estou dentro da pasta do projeto:"
+    pwd
     Get-ChildItem -Force
-  displayName: 'Diagnóstico e entrar na pasta ui-api-token'
+  displayName: "PASSO B - Entrar na pasta ui-api-token"
 
-# 2) Cache do NPM (APONTANDO PARA O package-lock.json DA SUBPASTA)
-- task: Cache@2
-  inputs:
-    key: 'npm | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
-    restoreKeys: |
-      npm | "$(Agent.OS)"
-    path: '$(NPM_CACHE_FOLDER)'
-  displayName: 'Cache do npm'
-
-# 3) Instalar dependências
-- powershell: |
-    Set-Location "$$(Build.SourcesDirectory)/$(projectdir)"
-    npm config set cache "$(NPM_CACHE_FOLDER)" --global
+  - powershell: |
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
     npm ci
-  displayName: 'Instalar dependências (npm ci)'
+  displayName: "PASSO C - Instalar dependências (npm ci)"
 
-# 4) Cache dos browsers do Playwright
-- task: Cache@2
-  inputs:
-    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
-    restoreKeys: |
-      playwright | "$(Agent.OS)"
-    path: '$(PLAYWRIGHT_BROWSERS_PATH)'
-  displayName: 'Cache Playwright browsers'
-
-# 5) Instalar browsers do Playwright (com deps)
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
-    npx playwright install
-  displayName: 'Instalar browsers do Playwright'
-
-# 6) Executar testes + gerar JUnit
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
-
-    # Gera JUnit + HTML report
-    npx playwright test --reporter=list,html,junit
-  displayName: 'Executar testes Playwright'
-
-# 7) Publicar resultados JUnit (mesmo se falhar)
-- task: PublishTestResults@2
+  - powershell: |
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
+    npx playwright test
+  displayName: "PASSO D - Executar testes Playwright"
   condition: succeededOrFailed()
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '**/junit*.xml'
-    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
-    failTaskOnFailedTests: false
-  displayName: 'Publicar resultados JUnit'
-
-# 8) Publicar relatório HTML do Playwright (mesmo se falhar)
-- task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
-    artifact: 'playwright-report'
-  displayName: 'Publicar relatório HTML (playwright-report)'
-
-# 9) Publicar evidências (screenshots) se existirem
-- task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/ui-api-token/screenshots'
-    artifact: 'screenshots'
-  displayName: 'Publicar screenshots'
