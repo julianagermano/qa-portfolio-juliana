@@ -65,7 +65,7 @@ steps:
 # Rodar testes (didático)
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/ui-api-token"
-    npx playwright test --reporter=list,html,junit
+    npx playwright test
   displayName: "PASSO D - Executar testes Playwright"
   continueOnError: true
 
