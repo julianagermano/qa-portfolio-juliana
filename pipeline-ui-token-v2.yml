@@ -122,8 +122,15 @@ steps:
 
 # Publicar HTML report
 - task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
+  displayName: "Publicar test-results (evidências)"
+  condition: and(succeededOrFailed(), eq(variables.hasTR, 'true'))
   inputs:
     targetPath: '$(Build.SourcesDirectory)/ui-api-token/test-results'
     artifact: 'test-results'
-  displayName: "Publicar test-results (evidências)"
+    
+- task: PublishPipelineArtifact@1
+  displayName: "Publicar playwright-report (HTML)"
+  condition: and(succeededOrFailed(), eq(variables.hasPR, 'true'))
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/ui-api-token/playwright-report'
+    artifact: 'playwright-report'
