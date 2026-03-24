@@ -23,22 +23,23 @@ steps:
 
 # 1) Diagnóstico (evita rodar fora da pasta)
 - powershell: |
-    $path = "$(Build.SourcesDirectory)/$(projectdir)"
     Write-Host "Build.SourcesDirectory: $(Build.SourcesDirectory)"
-    Write-Host "ProjectPath: $path"
+    Write-Host "Conteúdo da raiz do repo:"
+    Get-ChildItem "$(Build.SourcesDirectory)" -Force
 
-    if (!(Test-Path $path)) {
-      Write-Error "❌ Pasta do projeto não encontrada: $path"
-      Write-Host "Conteúdo da raiz do repo:"
-      Get-ChildItem "$(Build.SourcesDirectory)" -Force
+    $proj = "$(Build.SourcesDirectory)/$(projectdir)"
+    Write-Host "Tentando entrar em: $proj"
+
+    if (!(Test-Path $proj)) {
+      Write-Error "❌ Pasta do projeto não encontrada: $proj"
       exit 1
     }
 
-    Set-Location $path
-    Write-Host "✅ Pasta atual: $((Get-Location).Path)"
-    Write-Host "Arquivos:"
+    Set-Location $proj
+    Write-Host "✅ Pasta atual:"
+    pwd
     Get-ChildItem -Force
-  displayName: 'Diagnóstico e entrar na pasta ui-api-token'
+  displayName: "PASSO B - Entrar na pasta do projeto"
 
 # 2) Cache do NPM (APONTANDO PARA O package-lock.json DA SUBPASTA)
 - task: Cache@2
@@ -51,10 +52,10 @@ steps:
 
 # 3) Instalar dependências
 - powershell: |
-    Set-Location "$$(Build.SourcesDirectory)/$(projectdir)"
-    npm config set cache "$(NPM_CACHE_FOLDER)" --global
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
     npm ci
-  displayName: 'Instalar dependências (npm ci)'
+  displayName: "PASSO C - Instalar dependências"
+
 
 # 4) Cache dos browsers do Playwright
 - task: Cache@2
@@ -82,14 +83,19 @@ steps:
   displayName: 'Executar testes Playwright'
 
 # 7) Publicar resultados JUnit (mesmo se falhar)
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    npx playwright test
+  displayName: "PASSO D - Executar testes"
+  condition: succeededOrFailed()
 - task: PublishTestResults@2
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'JUnit'
-    testResultsFiles: '**/junit*.xml'
+    testResultsFiles: 'test-results/junit.xml'
     searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
     failTaskOnFailedTests: false
-  displayName: 'Publicar resultados JUnit'
+  displayName: "PASSO E - Publicar JUnit"
 
 # 8) Publicar relatório HTML do Playwright (mesmo se falhar)
 - task: PublishPipelineArtifact@1
@@ -97,7 +103,7 @@ steps:
   inputs:
     targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
     artifact: 'playwright-report'
-  displayName: 'Publicar relatório HTML (playwright-report)'
+  displayName: "PASSO F - Publicar Playwright report"
 
 # 9) Publicar evidências (screenshots) se existirem
 - task: PublishPipelineArtifact@1
@@ -105,4 +111,21 @@ steps:
   inputs:
     targetPath: '$(Build.SourcesDirectory)/$(projectdir)/screenshots'
     artifact: 'screenshots'
-  displayName: 'Publicar screenshots'
+  displayName: "PASSO G - Publicar screenshots"
+
+- powershell: |
+    $report = "$(Build.SourcesDirectory)/$(projectdir)/playwright-report"
+    if (Test-Path $report) {
+      Write-Host "##vso[task.setvariable variable=hasReport]true"
+    } else {
+      Write-Host "##vso[task.setvariable variable=hasReport]false"
+    }
+  displayName: "Checar se existe playwright-report"
+  condition: succeededOrFailed()
+
+- task: PublishPipelineArtifact@1
+  condition: and(succeededOrFailed(), eq(variables.hasReport, 'true'))
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
+    artifact: 'playwright-report'
+  displayName: "Publicar Playwright report"
