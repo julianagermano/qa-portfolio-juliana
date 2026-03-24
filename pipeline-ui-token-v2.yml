@@ -66,6 +66,13 @@ steps:
     path: '$(PLAYWRIGHT_BROWSERS_PATH)'
   displayName: 'Cache Playwright browsers'
 
+
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
+    npx playwright install
+  displayName: "Instalar browsers do Playwright"
+
+
 # 5) Instalar browsers do Playwright (com deps)
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
