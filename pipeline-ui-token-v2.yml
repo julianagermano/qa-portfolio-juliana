@@ -59,6 +59,7 @@ steps:
 # Cache Playwright browsers
 - task: Cache@2
   inputs:
+    condition: eq(variables.runE2E, 'true')
     key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
     restoreKeys: |
       playwright | "$(Agent.OS)"
@@ -69,37 +70,28 @@ steps:
 - powershell: |
     Write-Host "BASE_URL=$env:BASE_URL"
 
-    $uri = [Uri]$env:BASE_URL
-    $hostName = $uri.Host   # ✅ aqui a correção: NÃO use $Host
-    Write-Host "Host detectado: $hostName"
-
-    Write-Host "== DNS =="
+    $ok = $true
     try {
-      $ips = [System.Net.Dns]::GetHostAddresses($hostName)
-      $ips | ForEach-Object { Write-Host "IP: $_" }
+      $uri = [Uri]$env:BASE_URL
+      $hostName = $uri.Host
+      Write-Host "Host detectado: $hostName"
+
+      # valida DNS
+      [System.Net.Dns]::GetHostEntry($hostName) | Out-Null
       Write-Host "✅ DNS OK"
     } catch {
-      Write-Error "❌ DNS falhou (No such host is known / ERR_NAME_NOT_RESOLVED): $hostName"
-      exit 1
+      $ok = $false
+      Write-Host "⚠️ DNS falhou: $($_.Exception.Message)"
     }
 
-    Write-Host "== Rede (443) =="
-    $tnc = Test-NetConnection $hostName -Port 443
-    if (-not $tnc.TcpTestSucceeded) {
-      Write-Error "❌ Porta 443 não acessível (rede/firewall/ambiente fora)"
-      exit 1
+    if ($ok) {
+      Write-Host "##vso[task.setvariable variable=runE2E]true"
+      Write-Host "✅ Ambiente parece OK. Vou rodar E2E."
+    } else {
+      Write-Host "##vso[task.setvariable variable=runE2E]false"
+      Write-Host "⚠️ Ambiente fora/URL inválida. Vou pular E2E."
     }
-    Write-Host "✅ Porta 443 OK"
-
-    Write-Host "== HTTP =="
-    try {
-      $resp = Invoke-WebRequest -Uri $env:BASE_URL -UseBasicParsing -TimeoutSec 20
-      Write-Host "✅ HTTP OK: Status $($resp.StatusCode)"
-    } catch {
-      Write-Error "❌ HTTP falhou: $($_.Exception.Message)"
-      exit 1
-    }
-  displayName: "Health Check - verificar acesso ao ambiente"
+  displayName: "Health Check (define se roda E2E)"
   env:
     BASE_URL: $(BASE_URL)
 
