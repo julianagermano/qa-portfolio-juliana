@@ -113,18 +113,13 @@ steps:
 # Executar testes
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-
-    # Não printar token! Só validar que existe:
-    if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
-
-    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
     npx playwright test --reporter=list,html,junit
-  displayName: 'PASSO D - Executar testes Playwright'
-  continueOnError: true
+  displayName: "PASSO D - Executar testes Playwright"
+  condition: eq(variables.runE2E, 'true')
   env:
     BASE_URL: $(BASE_URL)
     API_TOKEN: $(API_TOKEN)
-    PLAYWRIGHT_BROWSERS_PATH: $(PLAYWRIGHT_BROWSERS_PATH)
+  continueOnError: true
 
 # Publicar JUnit (se existir)
 - task: PublishTestResults@2
