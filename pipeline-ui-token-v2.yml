@@ -14,19 +14,20 @@ steps:
 - checkout: self
   fetchDepth: 1
 
+# Node
 - task: NodeTool@0
   inputs:
     versionSpec: '$(NODE_VERSION)'
   displayName: 'Usar Node.js $(NODE_VERSION)'
 
-# 1) Diagnóstico (evita rodar fora da pasta)
+# Diagnóstico: garante pasta do projeto
 - powershell: |
     Write-Host "Build.SourcesDirectory: $(Build.SourcesDirectory)"
     Write-Host "Conteúdo da raiz do repo:"
     Get-ChildItem "$(Build.SourcesDirectory)" -Force
 
     $proj = "$(Build.SourcesDirectory)/$(projectdir)"
-    Write-Host "Tentando entrar em: $proj"
+    Write-Host "Projeto esperado em: $proj"
 
     if (!(Test-Path $proj)) {
       Write-Error "❌ Pasta do projeto não encontrada: $proj"
@@ -37,9 +38,9 @@ steps:
     Write-Host "✅ Pasta atual:"
     pwd
     Get-ChildItem -Force
-  displayName: "PASSO B - Entrar na pasta do projeto"
+  displayName: 'PASSO B - Entrar na pasta do projeto'
 
-# 2) Cache do NPM (APONTANDO PARA O package-lock.json DA SUBPASTA)
+# Cache npm
 - task: Cache@2
   inputs:
     key: 'npm | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
@@ -50,107 +51,102 @@ steps:
 
 # Instalar dependências
 - powershell: |
-    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    npm config set cache "$(NPM_CACHE_FOLDER)" --global
     npm ci
-  displayName: "PASSO C - Instalar dependências"
+  displayName: 'PASSO C - Instalar dependências (npm ci)'
 
+# Cache Playwright browsers
+- task: Cache@2
+  inputs:
+    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
+    restoreKeys: |
+      playwright | "$(Agent.OS)"
+    path: '$(PLAYWRIGHT_BROWSERS_PATH)'
+  displayName: 'Cache Playwright browsers'
+
+# Health Check (para falhar com clareza se BASE_URL estiver fora)
 - powershell: |
-    $tr = "$(Build.SourcesDirectory)/$(projectdir)/test-results"
-    $pr = "$(Build.SourcesDirectory)/$(projectdir)/playwright-report"
-
-    if (Test-Path $tr) { Write-Host "##vso[task.setvariable variable=hasTR]true" } else { Write-Host "##vso[task.setvariable variable=hasTR]false" }
-    if (Test-Path $pr) { Write-Host "##vso[task.setvariable variable=hasPR]true" } else { Write-Host "##vso[task.setvariable variable=hasPR]false" }
-  displayName: "Checar pastas de evidência"
-  condition: succeededOrFailed()
-
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
-
-    New-Item -ItemType Directory -Force "test-results" | Out-Null
-    New-Item -ItemType Directory -Force "playwright-report" | Out-Null
-
-    Write-Host "✅ Pastas criadas/garantidas:"
-    Write-Host " - $(Build.SourcesDirectory)/ui-api-token/test-results"
-    Write-Host " - $(Build.SourcesDirectory)/ui-api-token/playwright-report"
-  displayName: "Criar pastas de evidência (test-results e playwright-report)"
-
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-
-    # garante pastas de evidência
-    New-Item -ItemType Directory -Force "test-results" | Out-Null
-    New-Item -ItemType Directory -Force "playwright-report" | Out-Null
-
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-
     Write-Host "BASE_URL=$env:BASE_URL"
+
+    # Extrai host para validar DNS
+    $uri = [Uri]$env:BASE_URL
+    $host = $uri.Host
+    Write-Host "Host detectado: $host"
+
     try {
-      $resp = Invoke-WebRequest -Uri $env:BASE_URL -UseBasicParsing -TimeoutSec 20
-      Write-Host "Status: $($resp.StatusCode)"
+      [System.Net.Dns]::GetHostEntry($host) | Out-Null
+      Write-Host "✅ DNS OK: $host resolve"
     } catch {
-      Write-Error "Ambiente inacessível (DNS/VPN/URL). Erro: $($_.Exception.Message)"
+      Write-Error "❌ DNS falhou (ERR_NAME_NOT_RESOLVED): $host"
       exit 1
     }
 
-    npm ci
-    npx playwright install
+    try {
+      $resp = Invoke-WebRequest -Uri $env:BASE_URL -UseBasicParsing -TimeoutSec 20
+      Write-Host "✅ HTTP OK: Status $($resp.StatusCode)"
+    } catch {
+      Write-Error "❌ Ambiente inacessível (DNS/VPN/URL). Erro: $($_.Exception.Message)"
+      exit 1
+    }
+  displayName: 'Health Check - verificar acesso ao ambiente'
+  env:
+    BASE_URL: $(BASE_URL)
 
-    # Não printar token!
+# Garantir pastas de evidências (evita "Path does not exist")
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    New-Item -ItemType Directory -Force "test-results" | Out-Null
+    New-Item -ItemType Directory -Force "playwright-report" | Out-Null
+  displayName: 'Criar pastas de evidência'
+
+# Instalar browsers Playwright
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
+    npx playwright install
+  displayName: 'Instalar browsers do Playwright'
+  env:
+    PLAYWRIGHT_BROWSERS_PATH: $(PLAYWRIGHT_BROWSERS_PATH)
+
+# Executar testes
+- powershell: |
+    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
+
+    # Não printar token! Só validar que existe:
     if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
 
+    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
     npx playwright test --reporter=list,html,junit
-  displayName: "Health Check + Instalação + Execução Playwright"
+  displayName: 'PASSO D - Executar testes Playwright'
+  continueOnError: true
   env:
     BASE_URL: $(BASE_URL)
     API_TOKEN: $(API_TOKEN)
-  continueOnError: true
+    PLAYWRIGHT_BROWSERS_PATH: $(PLAYWRIGHT_BROWSERS_PATH)
 
-# Exemplo: checar se token veio (não printa o token)
-  if (-not $env:API_TOKEN) { throw "API_TOKEN não foi injetado no ambiente." }
-
-    npx playwright test --reporter=list,html,junit
-  displayName: "PASSO D - Executar testes Playwright"
-  env:
-    API_TOKEN: $(API_TOKEN)
-  continueOnError: true
-
-# Rodar testes (didático)
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
-    npx playwright test --reporter=list,html,junit
-  displayName: "PASSO D - Executar testes Playwright"
-  continueOnError: true
-
-# Checar relatórios
-- powershell: |
-    $report = "$(Build.SourcesDirectory)/ui-api-token/playwright-report"
-    $junit  = "$(Build.SourcesDirectory)/ui-api-token/test-results/junit.xml"
-    if (Test-Path $report) { Write-Host "##vso[task.setvariable variable=hasReport]true" } else { Write-Host "##vso[task.setvariable variable=hasReport]false" }
-    if (Test-Path $junit)  { Write-Host "##vso[task.setvariable variable=hasJUnit]true" }  else { Write-Host "##vso[task.setvariable variable=hasJUnit]false" }
-  displayName: "Checar se existem relatórios"
-  condition: succeededOrFailed()
-
-# Publicar JUnit
+# Publicar JUnit (se existir)
 - task: PublishTestResults@2
-  condition: and(succeededOrFailed(), eq(variables.hasJUnit, 'true'))
+  condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: 'test-results/junit.xml'
-    searchFolder: '$(Build.SourcesDirectory)/ui-api-token'
+    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
     failTaskOnFailedTests: false
-  displayName: "Publicar JUnit"
+  displayName: 'Publicar JUnit'
 
-# Publicar HTML report
+# Publicar evidências (test-results)
 - task: PublishPipelineArtifact@1
-  condition: and(succeededOrFailed(), eq(variables.hasTR, 'true'))
+  condition: succeededOrFailed()
   inputs:
     targetPath: '$(Build.SourcesDirectory)/$(projectdir)/test-results'
     artifact: 'test-results'
-  displayName: "Publicar evidências (test-results)"
+  displayName: 'Publicar test-results'
+
+# Publicar relatório HTML (playwright-report)
 - task: PublishPipelineArtifact@1
-  condition: and(succeededOrFailed(), eq(variables.hasPR, 'true'))
+  condition: succeededOrFailed()
   inputs:
     targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
     artifact: 'playwright-report'
-  displayName: "Publicar relatório (playwright-report)"
+  displayName: 'Publicar playwright-report'
