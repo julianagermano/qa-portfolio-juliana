@@ -69,27 +69,37 @@ steps:
 - powershell: |
     Write-Host "BASE_URL=$env:BASE_URL"
 
-    # Extrai host para validar DNS
     $uri = [Uri]$env:BASE_URL
-    $host = $uri.Host
-    Write-Host "Host detectado: $host"
+    $hostName = $uri.Host   # ✅ aqui a correção: NÃO use $Host
+    Write-Host "Host detectado: $hostName"
 
+    Write-Host "== DNS =="
     try {
-      [System.Net.Dns]::GetHostEntry($host) | Out-Null
-      Write-Host "✅ DNS OK: $host resolve"
+      $ips = [System.Net.Dns]::GetHostAddresses($hostName)
+      $ips | ForEach-Object { Write-Host "IP: $_" }
+      Write-Host "✅ DNS OK"
     } catch {
-      Write-Error "❌ DNS falhou (ERR_NAME_NOT_RESOLVED): $host"
+      Write-Error "❌ DNS falhou (No such host is known / ERR_NAME_NOT_RESOLVED): $hostName"
       exit 1
     }
 
+    Write-Host "== Rede (443) =="
+    $tnc = Test-NetConnection $hostName -Port 443
+    if (-not $tnc.TcpTestSucceeded) {
+      Write-Error "❌ Porta 443 não acessível (rede/firewall/ambiente fora)"
+      exit 1
+    }
+    Write-Host "✅ Porta 443 OK"
+
+    Write-Host "== HTTP =="
     try {
       $resp = Invoke-WebRequest -Uri $env:BASE_URL -UseBasicParsing -TimeoutSec 20
       Write-Host "✅ HTTP OK: Status $($resp.StatusCode)"
     } catch {
-      Write-Error "❌ Ambiente inacessível (DNS/VPN/URL). Erro: $($_.Exception.Message)"
+      Write-Error "❌ HTTP falhou: $($_.Exception.Message)"
       exit 1
     }
-  displayName: 'Health Check - verificar acesso ao ambiente'
+  displayName: "Health Check - verificar acesso ao ambiente"
   env:
     BASE_URL: $(BASE_URL)
 
