@@ -7,7 +7,7 @@ Este projeto demonstra uma automação completa de testes de API usando:
 - Validação de contrato (JSON Schema + Ajv)
 - Geração de relatório HTML/JSON com Newman
 - Execução via `run-tests.bat`
-- Estrutura escalável para portfólio
+- Estrutura escalável e reutilizável para projetos reais e CI/CD
 
 ---
 
@@ -24,16 +24,20 @@ api-auth-automation/
 ├─ login.schema.json
 └─ refresh.schema.json
 
+### 💡 Execução via script
 
-## ▶ Como executar os testes (Windows)
-
-### 💡 Com duplo clique:
-Basta executar:
-
+Execute o arquivo:
 run-tests.bat
 
 newman run "Auth.postman_collection.json" -e "Auth_DummyJSON.postman_environment.json" -r "cli,html" --reporter-html-export "Resultado.html"
 
+
+### 💡 Execução manual via Newman
+
+newman run "Auth.postman_collection.json" \
+-e "Auth_DummyJSON.postman_environment.json" \
+-r "cli,html" \
+--reporter-html-export "Resultado.html"
 ---
 
 ## 🔍 Funcionalidades implementadas
