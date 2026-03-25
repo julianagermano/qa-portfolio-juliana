@@ -24,16 +24,15 @@ api-auth-automation/
 ├─ login.schema.json
 └─ refresh.schema.json
 
-### 💡 Execução via script
-
+## ▶ Como executar os testes (Execução Local)
+### 💡 Execução via script (Windows)
 Execute o arquivo:
+```bash
 run-tests.bat
-
-newman run "Auth.postman_collection.json" -e "Auth_DummyJSON.postman_environment.json" -r "cli,html" --reporter-html-export "Resultado.html"
+newman run "Auth.postman_collection.json" -e "Auth_DummyJSON.postman_environment.json" -r "cli,html" --reporter-html-export "Resultado.html
 
 
 ### 💡 Execução manual via Newman
-
 newman run "Auth.postman_collection.json" \
 -e "Auth_DummyJSON.postman_environment.json" \
 -r "cli,html" \
@@ -91,4 +90,7 @@ você verá arquivos como:
 
 ---
 
-Feito com 💛 por Juliana
+
+Feito com 💛 por Juliana  
+Projeto desenvolvido para fins de aprendizado, portfólio e evolução em QA Engineering.
+
