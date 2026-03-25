@@ -1,96 +1,120 @@
 # qa-portfolio-juliana
 [![Build Status](https://dev.azure.com/SISTEMAS-DOTNET/QA/_apis/build/status%2Fjulianagermano.qa-portfolio-juliana?branchName=main)](https://dev.azure.com/SISTEMAS-DOTNET/QA/_build/latest?definitionId=2&branchName=main)
 
-Portfólio de Qualidade de Software – APIs, Automação, Pipelines e Projetos.
+Portfólio de Qualidade de Software com foco em **APIs, Automação, CI/CD e Estratégia de Qualidade**.
+
+---
 
 ## 📁 Projetos do Portfólio
 
-### 🔹 1. Automação de API – Auth (Postman + Newman)
-Automação completa usando:
-- Testes funcionais
+### 🚀 Projeto 1 — Automação de API (Auth – Postman + Newman)
+
+Automação completa de APIs com foco em qualidade funcional e estrutural.
+
+**Principais características:**
+- Testes funcionais de API
 - Testes de contrato (JSON Schema + Ajv)
-- Gerador de relatórios HTML/JSON com Newman
-- Execução via `.bat`
-- Estrutura escalável para CI/CD
+- Scripts dinâmicos no Postman
+- Refresh de token automático
+- Execução via Newman
+- Relatórios HTML e JSON
+- Estrutura preparada para CI/CD
 
-📌 Repositório:
-[`api-auth-automation`](./api-auth-automation/)
-
----
-
-## 🎯 Objetivo do Portfólio
-
-Este repositório centraliza meus principais projetos como profissional de Qualidade de Software, incluindo:
-
-- Testes de API com Postman + Newman  
-- Testes de contrato  
-- Testes com massa (CSV)  
-- Relatórios de qualidade  
-- Pipelines de CI/CD  
-- Boas práticas de QA  
-- Estruturas reutilizáveis  
-- Automação para projetos reais  
+📎 Projeto:  
+[api-auth-automation](./api-auth-automation/)
 
 ---
 
-## 💛 Sobre mim
+### 🚀 Projeto 2 — Automação UI + Pipeline CI/CD (Playwright)
 
+Projeto focado em automação de testes end‑to‑end (E2E) de interface, integrado a pipeline de CI/CD, com ênfase em decisões técnicas de qualidade.
+
+**Principais características:**
+- Automação UI com Playwright
+- Navegação controlada por variáveis de ambiente
+- Execução local para desenvolvimento
+- Execução automática via pipeline (CI/CD)
+- Health Check para validação de ambiente
+- Execução condicional de testes (skip inteligente)
+- Publicação de evidências e relatórios
+
+**Objetivo do projeto:**
+Demonstrar uma abordagem moderna de QA Engineering, onde a automação:
+- não gera falsos negativos
+- não bloqueia entregas por falhas externas
+- escala de forma sustentável em pipelines
+
+📎 Projeto:  
+[ui-api-token](./ui-api-token/)
+
+---
+
+## ▶️ Como Executar os Testes
+
+Este portfólio permite execução dos testes de duas formas: **execução local** ou **execução automática via pipeline (CI/CD)**.
+
+### 1️⃣ Execução Local (Desenvolvimento / Aprendizado)
+
+Utilize quando estiver:
+- desenvolvendo ou ajustando testes
+- validando cenários antes de subir para o repositório
+- aprendendo a estrutura de automação
+
+**Passo a passo:**
+```bash
+cd ui-api-token
+npm install
+npx playwright test
+
+Para executar um teste específico:
+npx playwright test tests/preauth.spec.js
+A execução local é manual e usada apenas para desenvolvimento.
+
+2️⃣ Execução Automática via Pipeline (CI/CD)
+A execução oficial ocorre automaticamente via pipeline quando:
+
+um commit é realizado no repositório
+a pipeline é executada manualmente
+
+Neste modo:
+
+não é necessário executar comandos no terminal local
+a pipeline prepara o ambiente
+decide se os testes devem ser executados
+publica relatórios e evidências
+
+
+✅ Boas Práticas Adotadas
+
+Execução manual apenas para desenvolvimento
+Pipeline como fonte oficial de validação
+Separação clara entre automação e CI/CD
+Execução condicional baseada na disponibilidade do ambiente
+
+Objetivo do Portfólio
+Centralizar projetos que demonstrem:
+
+Qualidade ponta a ponta
+Automação de testes
+Integração contínua
+Testes de API e UI
+Estruturas reutilizáveis
+Boas práticas de QA Engineering
+
+Sobre mim
 Profissional de QA com foco em:
 
-- Qualidade ponta a ponta  
-- Automação  
-- Integração contínua  
-- API Testing  
-- Entrega com excelência  
+Qualidade ponta a ponta
+Automação de testes
+Integração contínua
+API Testing
+Entrega com excelência
 
-Buscando sempre criar templates e processos otimizados para acelerar a qualidade dos projetos.
+Busco constantemente criar templates, pipelines e estratégias reutilizáveis para escalar qualidade em diferentes projetos.
 
----
+Próximos projetos
 
-## 🚀 Projeto 1 — Automação de API (Auth – Postman + Newman)
-
-Automação de API com:
-- Testes funcionais
-- Testes de contrato (JSON Schema + Ajv)
-- Scripts dinâmicos Postman
-- Refresh token automático
-- Runner com Newman
-- Relatórios HTML e JSON
-- Execução via .bat
-- Estrutura preparada para CI/CD
-
-📎 Link para o projeto:  
-[api-auth-automation](./api-auth-automation/)
-
-Simples assim.
-
-⭐ EXEMPLO VISUAL de como o seu README raiz deve ficar:
-# qa-portfolio-juliana
-Portfólio de Qualidade de Software – APIs, Automação, Pipelines e Projetos.
-
----
-
-## 🚀 Projeto 1 — Automação de API (Auth – Postman + Newman)
-
-Automação de API com:
-- Testes funcionais
-- Testes de contrato (JSON Schema + Ajv)
-- Scripts dinâmicos Postman
-- Refresh token automático
-- Runner com Newman
-- Relatórios HTML e JSON
-- Execução via .bat
-- Estrutura preparada para CI/CD
-
-📎 Link para o projeto:  
-[api-auth-automation](./api-auth-automation/)
-
----
-
-## (Projetos futuros aqui)
-
-## 🚀 Próximos projetos
-- Automação UI com Playwright  
-- Pipelines avançados em Azure DevOps  
-- Testes híbridos (API + UI)  
-- Testes com geração dinâmica de dados  
+Pipelines avançados em Azure DevOps
+Testes híbridos (API + UI)
+Estratégias de Smoke e Regressão
+Testes com geração dinâmica de dados
