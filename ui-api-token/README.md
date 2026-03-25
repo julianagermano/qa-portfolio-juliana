@@ -1,236 +1,124 @@
-#  Projeto 6 — UI + API (Token Dinâmico com Playwright)
+# Automação UI – Playwright + CI/CD
 
-https://img.shields.io/badge/Tipo-UI%20%2B%20API-blueviolet?style=flat-square
-https://img.shields.io/badge/Framework-Playwright-brightgreen?style=flat-square
-https://img.shields.io/badge/Relat%C3%B3rio-HTML-success?style=flat-square
-https://img.shields.io/badge/Portf%C3%B3lio-Gen%C3%A9rico%20e%20Seguro-00bcd4?style=flat-square
+Este projeto contém uma automação de testes end‑to‑end (E2E) de interface, desenvolvida com **Playwright** e integrada a uma **pipeline de CI/CD**, com foco em qualidade contínua, resiliência e decisões técnicas de execução.
 
-Automação de **UI** iniciando **já autenticada**, obtendo **token via API** (DummyJSON – pública) e demonstrando **três técnicas profissionais** de “pré‑autenticação”:
-
-1. **Authorization Header global** (todas as requisições com `Bearer <token>`)  
-2. **LocalStorage** (SPA lê o token na inicialização)  
-3. **Cookie** (apps que mantêm sessão em cookie)
-
->  Projeto 100% genérico: **sem dados de empresa**, **sem endpoints internos** e **sem informação sensível**.
+O projeto foi desenhado para ser **genérico e reutilizável**, podendo ser adaptado a qualquer sistema web.
 
 ---
 
-##  Estrutura
+## 🎯 Objetivo do Projeto
+
+Demonstrar uma abordagem moderna de QA Engineering, onde:
+
+- Automação não gera falsos negativos
+- Falhas de ambiente não quebram a pipeline
+- Execução é controlada e previsível
+- Qualidade é tratada como parte do sistema
+
+---
+
+## 🏗️ Estrutura do Projeto
+
+```text
 ui-api-token/
+│
+├─ tests/                   # Testes automatizados (Playwright)
+│   ├─ preauth.spec.js
+│   ├─ login.spec.js
+│   └─ smoke.spec.js
+│
+├─ playwright.config.js     # Configuração do Playwright
 ├─ package.json
-├─ playwright.config.js
-├─ .gitignore
-├─ src/
-│  └─ auth.api.js            # faz login via API e retorna { accessToken, refreshToken }
-├─ tests/
-│  └─ preauth.spec.js        # 3 cenários de pré-autenticação (header/localStorage/cookie)
-└─ screenshots/
-└─ relatorio-ui-token.png # evidência do relatório HTML
+├─ package-lock.json
+└─ README.md
 
+Estratégia de Testes
 
----
+Testes E2E orientados a fluxo de negócio
+Navegação controlada por variáveis de ambiente
+Execução idempotente (testes independentes)
+Testes preparados para execução local e em CI/CD
 
-## 🧰 Pré‑requisitos
+A navegação da aplicação utiliza variáveis de ambiente:
 
-- **Node.js 18+**  
-- **Playwright Test** instalado como devDependency do projeto
+await page.goto(process.env.BASE_URL);
 
-```bash
-npm install -D @playwright/test
-npx playwright install
+Isso permite reutilizar os mesmos testes em diferentes ambientes sem alteração de código.
 
-Dica: o projeto usa CommonJS no playwright.config.js
-(const { defineConfig } = require('@playwright/test'); + module.exports = defineConfig({...})).
+Como Executar os Testes
+Os testes podem ser executados de duas formas: localmente ou via pipeline.
 
-Como a autenticação é obtida
-Arquivo src/auth.api.js:
+Execução Local (Desenvolvimento / Aprendizado)
+Utilize este modo quando estiver:
 
-Realiza POST https://dummyjson.com/auth/login com as credenciais de demo:
+desenvolvendo ou ajustando testes
+validando cenários antes de subir para o repositório
+depurando falhas
 
-username: emilys
-password: emilyspass
+Passo a passo
 
+Acesse a pasta do projeto:
 
-Retorna { accessToken, refreshToken }
-O accessToken é utilizado nas três técnicas de pré‑auth:
+cd ui-api-token
 
-TécnicaOnde o token entraQuando aplicarHeaderAuthorization: Bearer <token> (contexto Playwright)Quando a API/edge valida todas as chamadas por headerLocalStoragelocalStorage.setItem('accessToken', token) antes do gotoSPAs (React/Vue/Angular) que leem token no bootCookiecontext.addCookies([...])Apps que usam sessão baseada em cookie (JWT/SessionId)
+Instale as dependências (quando necessário):
 
-Testes (arquivo tests/preauth.spec.js)
-
-A) Token via Authorization header global → valida em https://httpbin.org/headers se o header foi enviado
-B) Token pré‑carregado no LocalStorage (SPA) → injeta antes do goto e confere com page.evaluate
-C) Token como cookie (sessão) → seta cookie e valida em https://httpbin.org/cookies
-
-
-Esses alvos (httpbin / example.com) tornam o projeto independente de uma UI proprietária.
-Para usar na sua UI real, troque:
-
-TARGET_URL por sua aplicação
-LOCALSTORAGE_KEY pela chave que a UI lê
-COOKIE_NAME pelo nome esperado pelo servidor
-
-Como executar
-No diretório ui-api-token/:
-# instalar dependências (primeira vez)npm installnpx playwright install
-
-# instalar dependências (primeira vez)
 npm install
-npx playwright install
 
-# headless (rápido)
+Execute todos os testes:
+
 npx playwright test
 
-# com navegador
-npx playwright test --headed
+Ou execute um teste específico:
 
-# relatório HTML (modo servidor)
-npx playwright show-report
+npx playwright test tests/preauth.spec.js
 
-# abrir o HTML direto (sem servidor/portas)
-# recomendado para evitar erro de porta ocupada (EADDRINUSE)
-start ./playwright-report/index.html
+A execução local é manual e utilizada apenas para desenvolvimento.
 
-Se o show-report acusar EADDRINUSE 9323, feche o servidor anterior com Ctrl+C
-ou suba em outra porta: npx playwright show-report --port=9333.
+Execução Automática via Pipeline (CI/CD)
+A execução oficial dos testes ocorre automaticamente via pipeline quando:
 
-Evidência — Relatório HTML (Playwright)
-./screenshots/relatorio-ui-token.png
+um commit é realizado no repositório
+a pipeline é executada manualmente
 
-Dica: para telas adicionais, salve no mesmo diretório e referencie no README.
+Neste modo:
 
-Boas práticas aplicadas
+não é necessário executar comandos localmente
+a pipeline prepara o ambiente
+decide se os testes devem ser executados
+publica relatórios e evidências
 
-Pré‑autenticação da UI via Header, LocalStorage e Cookie
-Testes independentes de UI proprietária, com alvos públicos para prova de conceito
-CommonJS no playwright.config.js (compatível sem alterar package.json)
-Trace on-first-retry, screenshots e vídeos em falhas (configurável)
-Relatório HTML versionável (playwright-report/)
-Caminhos e exemplos genéricos, adequados a portfólio público
+Health Check e Execução Condicional
+Antes de executar os testes E2E, a pipeline realiza um Health Check para validar a disponibilidade do ambiente.
+Com base nesse resultado, a pipeline define se os testes devem ou não ser executados:
 
-Como adaptar para uma UI real
+ Ambiente disponível → testes são executados
+ Ambiente indisponível → testes são pulados de forma controlada
 
+Essa abordagem evita:
 
-Descubra como a sua UI autentica:
+falsos erros de automação
+pipelines quebradas por falha externa
+bloqueio indevido de entregas
 
-LocalStorage → ver chave em DevTools > Application > Local Storage
-Cookie → ver nome/domínio em DevTools > Application > Cookies
-Header → validados pelo backend/APIGW
+Evidências e Relatórios
+Quando executados, os testes geram:
 
+Relatório HTML do Playwright
+Evidências técnicas de execução
+Resultados estruturados (JUnit), quando aplicável
 
+Quando os testes são pulados por decisão da pipeline, a ausência de relatórios é tratada como comportamento esperado, não erro.
 
-Atualize no teste:
+Boas Práticas Aplicadas
 
-TARGET_URL, LOCALSTORAGE_KEY, COOKIE_NAME
-As asserções finais (ex.: badge de usuário, dashboard, produtos etc.)
+Separação clara entre automação e pipeline
+Execução local apenas para desenvolvimento
+Pipeline como fonte oficial de validação
+Execução condicional baseada na disponibilidade do ambiente
+Código desacoplado de ambiente específico
 
+Conclusão
+Este projeto demonstra uma automação de UI preparada para cenários reais de CI/CD, onde qualidade, estabilidade e tomada de decisão técnica são prioridades.
+A estrutura permite evolução contínua, inclusão de novos testes e adaptação a diferentes contextos de execução.
 
-
-(Opcional) Crie fixtures para reaproveitar o token entre cenários.
-
-Troubleshooting
-
-
-Cannot find module '@playwright/test'
-→ Rode npm install -D @playwright/test no diretório ui-api-token/.
-
-
-defineConfig is not defined
-→ Garanta CommonJS no config:
-
-const { defineConfig } = require('@playwright/test');
-module.exports = defineConfig({ /* ... */ });
-
-EADDRINUSE :9323 no show-report
-→ Feche o anterior com Ctrl+C ou use --port=9333.
-→ Alternativa infalível: start ./playwright-report/index.html.
-
-
-Falha no login da API DummyJSON (rede/proxy)
-→ Tente novamente; a API é pública e pode oscilar brevemente.
-→ Em último caso, substitua o alvo por reqres.in ou simule token fixo (apenas para PoC).
-
-Pipeline (opcional – Azure DevOps)
-
-pool:
-  vmImage: 'windows-latest'
-
-variables:
-  projectdir: 'ui-api-token'
-  NPM_CACHE_FOLDER: '$(Pipeline.Workspace)/.npm'
-  PLAYWRIGHT_BROWSERS_PATH: '$(Pipeline.Workspace)/.pw-browsers'
-
-steps:
-- checkout: self
-  fetchDepth: 1
-
-# (Opcional mas MUITO útil) Diagnóstico rápido
-- powershell: |
-    Write-Host "Build.SourcesDirectory = $(Build.SourcesDirectory)"
-    Write-Host "Conteúdo da raiz:"
-    Get-ChildItem "$(Build.SourcesDirectory)" -Force
-    Write-Host "Conteúdo do projeto:"
-    Get-ChildItem "$(Build.SourcesDirectory)/$(projectdir)" -Force
-  displayName: 'Diagnóstico: estrutura do repo'
-
-# ✅ Cache do npm (agora apontando para o lockfile da subpasta)
-- task: Cache@2
-  inputs:
-    key: 'npm | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
-    restoreKeys: |
-      npm | "$(Agent.OS)"
-    path: '$(NPM_CACHE_FOLDER)'
-  displayName: 'Cache do npm'
-
-# ✅ Instalar dependências dentro da pasta certa
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    npm config set cache "$(NPM_CACHE_FOLDER)" --global
-    npm ci
-  displayName: 'Instalar dependências (npm ci)'
-
-# ✅ Cache dos browsers do Playwright
-- task: Cache@2
-  inputs:
-    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
-    restoreKeys: |
-      playwright | "$(Agent.OS)"
-    path: '$(PLAYWRIGHT_BROWSERS_PATH)'
-  displayName: 'Cache Playwright browsers'
-
-# ✅ Instalar browsers do Playwright
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
-    npx playwright install
-  displayName: 'Instalar browsers do Playwright'
-
-# ✅ Rodar testes (gera HTML + JUnit)
-- powershell: |
-    Set-Location "$(Build.SourcesDirectory)/ui-api-token"
-    npx playwright test --reporter=list,html,junit
-  displayName: 'Executar testes Playwright'
-
-# ✅ Publicar JUnit (mesmo se falhar)
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '**/junit*.xml'
-    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
-    failTaskOnFailedTests: false
-  displayName: 'Publicar resultados JUnit'
-
-# ✅ Publicar relatório HTML do Playwright
-- task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
-    artifact: 'playwright-report'
-  displayName: 'Publicar relatório HTML'
-
-Depois de criar a pipeline, adicione o badge no topo deste README (igual o Projeto 3).
-
-Este projeto comprova domínio de integração UI+API, cobrindo três estratégias de autenticação amplamente usadas em produção.
-É 100% genérico, seguro e reutilizável — ideal para portfólio público e para iniciar automações reais.
-Feito com 💛 por Juliana
