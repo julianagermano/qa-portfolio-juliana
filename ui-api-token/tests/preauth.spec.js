@@ -1,32 +1,22 @@
 import { test, expect } from '@playwright/test';
 
 test('Token pré-carregado no localStorage (Offline)', async ({ browser }) => {
+
   // 1️⃣ Cria o contexto do navegador
   const context = await browser.newContext();
 
-  // 2️⃣ 👉 OPÇÃO B: injeta o token ANTES da página carregar
+  // 2️⃣ (se você usa token) injeta antes da página abrir
   await context.addInitScript((token) => {
     window.localStorage.setItem('token', token);
   }, process.env.API_TOKEN);
 
-  // 3️⃣ Agora cria a página (já com o script injetado)
+  // 3️⃣ Cria a página
   const page = await context.newPage();
 
-  // 4️⃣ Navega ONLINE para garantir domínio válido
-  await page.goto(process.env.BASE_URL, {
-    waitUntil: 'domcontentloaded',
-  });
+  // ✅ 4️⃣ AQUI É O LUGAR DO page.goto
+  await page.goto(process.env.BASE_URL);
 
-  // (opcional, mas didático enquanto aprende)
-  console.log('URL atual:', page.url());
-
-  // 5️⃣ Só AGORA você ativa o offline
-  await context.setOffline(true);
-
-  // 6️⃣ Recarrega para simular uso offline
-  await page.reload({ waitUntil: 'domcontentloaded' });
-
-  // 7️⃣ Seus asserts
-  // Exemplo:
-  // await expect(page.locator('text=Token inválido')).toBeVisible();
+  // 5️⃣ A partir daqui vêm interações e asserts
+  // ex:
+  // await expect(page.locator('text=Bem-vindo')).toBeVisible();
 });
