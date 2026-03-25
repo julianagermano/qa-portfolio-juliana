@@ -73,26 +73,20 @@ if (got === 200) {
     });
 }
 
-Como Executar (PowerShell)
-Execução simples (CLI)
+---
 
+## ▶️ Como Executar os Testes (PowerShell / Newman)
+
+Este projeto utiliza o **Newman CLI** para executar a collection do Postman com massa de dados em CSV.
+
+---
+
+### ✅ Execução simples (CLI)
+
+```powershell
 newman run ".\api-auth-automation\Auth.postman_collection.json" `
   -e ".\api-auth-automation\Auth_DummyJSON.postman_environment.json" `
-  -r "cli,html,json"
-
-Execução com HTML + JSON
-
-newman run ".\api-auth-automation\Auth.postman_collection.json" `
-  -e ".\api-auth-automation\Auth_DummyJSON.postman_environment.json" `
-  -r "cli,html,json" `
   --iteration-data ".\api-auth-automation\data\usuarios.csv"
-
-Boas Práticas Aplicadas
-Testes orientados a dados (CSV)
-Validação dinâmica por iteração
-Separação clara de massa e lógica
-Relatórios para auditoria
-Estrutura compatível com CI/CD
 
 Conclusão
 Este projeto demonstra domínio em:
@@ -103,5 +97,18 @@ Newman CLI
 Relatórios HTML avançados
 Scripts dinâmicos no Postman
 Ele se integra naturalmente aos demais projetos do portfólio.
+
+newman run ".\api-auth-automation\Auth.postman_collection.json" `
+  -e ".\api-auth-automation\Auth_DummyJSON.postman_environment.json" `
+  -r "cli,htmlextra" `
+  --iteration-data ".\api-auth-automation\data\usuarios.csv" `
+  --reporter-htmlextra-export "Resultado_csv.html"
+
+newman run ".\api-auth-automation\Auth.postman_collection.json" `
+  -e ".\api-auth-automation\Auth_DummyJSON.postman_environment.json" `
+  -r "cli,html,json" `
+  --iteration-data ".\api-auth-automation\data\usuarios.csv" `
+  --reporter-html-export "Resultado_csv.html" `
+  --reporter-json-export "Resultado_csv.json"
 
 Feito com 💛 por Juliana
