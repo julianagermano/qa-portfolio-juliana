@@ -101,6 +101,31 @@ Testes de API e UI
 Estruturas reutilizáveis
 Boas práticas de QA Engineering
 
+## 📚 Documentos de Estratégia de Qualidade
+
+Os documentos abaixo consolidam a abordagem de QA Engineering aplicada neste portfólio, cobrindo estratégia de testes, mensageria, CI/CD, observabilidade e governança de qualidade.
+
+- 🧪 Estratégia de Testes (API x UI x Mensageria)  
+  docs/estrategia-testes-api-ui-mensageria.md
+
+- 📬 Estratégia de Testes com Mensageria  
+  docs/estrategia-testes-mensageria.md
+
+- 🚦 Quality Gates  
+  docs/quality-gates.md
+
+- 🔭 Observabilidade para QA  
+  docs/observabilidade-para-qa.md
+
+- 🛠️ Playbook de Triagem de Falhas  
+  docs/playbook-triagem-falhas-qa.md
+
+- 🐞 Template de Bug Report Técnico  
+  docs/template-bug-report-tecnico.md
+
+- 🚨 Template de Incidente (Post‑mortem)  
+  docs/template-incidente-post-mortem-qa.md
+
 Sobre mim
 Profissional de QA com foco em:
 
