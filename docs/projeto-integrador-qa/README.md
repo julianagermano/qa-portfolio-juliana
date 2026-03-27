@@ -139,11 +139,12 @@ trabalha com evidência e dados
 reduz risco de produção
 
 
+
 ## 🗺️ Diagrama do Fluxo de Qualidade
 
-O diagrama abaixo representa o fluxo ponta a ponta do produto e os pontos de atuação do QA:
+O diagrama abaixo representa o fluxo ponta a ponta do produto e os principais pontos de atuação da Qualidade (QA), incluindo testes de UI, API, mensageria e validações de estado.
 
-![Fluxo QA](./diagramas/fluxo-qa-ponta-a-ponta.png)
+![Fluxo de Qualidade Ponta a Ponta](./diagramas/fluxo-qa-ponta-a-ponta.png)
 
  Conclusão
 O Projeto Integrador representa uma visão madura de QA Engineering, conectando automação, estratégia, governança e observabilidade em uma abordagem única e reutilizável.
