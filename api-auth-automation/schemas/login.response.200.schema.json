@@ -1,1 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Login Response 200",
+  "type": "object",
+  "required": ["accessToken", "refreshToken"],
+  "properties": {
+    "accessToken": { "type": "string", "minLength": 1 },
+    "refreshToken": { "type": "string", "minLength": 1 },
 
+    "expiresIn": { "type": "number" },
+    "tokenType": { "type": "string" },
+
+    "id": { "type": "number" },
+    "username": { "type": "string" },
+    "email": { "type": "string" }
+  },
+  "additionalProperties": true
+}
