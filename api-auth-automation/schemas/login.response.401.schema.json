@@ -1,6 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Login Response 401",
   "type": "object",
   "required": ["message"],
   "properties": {
@@ -10,4 +8,3 @@
   },
   "additionalProperties": true
 }
-``
