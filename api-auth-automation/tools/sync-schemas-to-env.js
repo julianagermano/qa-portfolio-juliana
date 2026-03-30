@@ -32,3 +32,4 @@ for (const m of mapping) {
 
 fs.writeFileSync(envPath, JSON.stringify(env, null, 2), "utf8");
 console.log("✅ Schemas sincronizados no environment com sucesso.");
+``
