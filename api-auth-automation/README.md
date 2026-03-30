@@ -81,6 +81,10 @@ você verá arquivos como:
 
 ---
 
+Contratos (schemas)”
+
+---
+
 ## 📌 Próximos passos
 
 - Adicionar pipeline do Azure DevOps (CI/CD)
