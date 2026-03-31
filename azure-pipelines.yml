@@ -32,21 +32,25 @@ steps:
 - powershell: |
     cd "$(Build.SourcesDirectory)/api-auth-automation"
 
-    # sincroniza schemas do Git -> environment
+    # Confirma que os arquivos existem (diagnóstico rápido)
+    dir
+
+    # Sincroniza schemas do Git -> environment
     node tools/sync-schemas-to-env.js
 
-    # pasta para relatórios (evita "path does not exist")
+    # Garante pasta de reports
     New-Item -ItemType Directory -Force "reports" | Out-Null
-
     $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
-- task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/api-auth-automation/reports'
-    artifact: 'contract-report'
-    publishLocation: 'pipeline'
-  displayName: 'Publicar relatório de contrato (HTML)'
 
+    # Roda a collection REAL do projeto
+    newman run "Auth.postman_collection.json" `
+      -e "Auth_DummyJSON.postman_environment.json" `
+      -r "cli,htmlextra" `
+      --reporter-htmlextra-export "reports/Resultado_API_Contrato_$ts.html"
+
+    Write-Host "=== Arquivos gerados em reports ==="
+    dir .\reports
+   
 - task: PowerShell@2
   displayName: 'Executar Newman (Contrato)'
   inputs:
