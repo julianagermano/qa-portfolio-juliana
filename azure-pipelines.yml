@@ -44,10 +44,12 @@ steps:
     $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
 
     # Executa a collection REAL do projeto (não contract.json)
+    
     newman run "Auth.postman_collection.json" `
       -e "Auth_DummyJSON.postman_environment.json" `
-      -r "cli,htmlextra" `
-      --reporter-htmlextra-export "reports/Resultado_API_Contrato_$ts.html"
+      -r "cli,htmlextra,junit" `
+      --reporter-htmlextra-export "reports/Resultado_API_Contrato_$ts.html" `
+      --reporter-junit-export "reports/junit.xml
 
     Write-Host "=== Arquivos gerados em reports ==="
     dir .\reports
@@ -60,3 +62,13 @@ steps:
     artifact: 'contract-report'
     publishLocation: 'pipeline'
   displayName: "Publicar relatório de contrato (HTML)"
+  
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'junit.xml'
+    searchFolder: '$(Build.SourcesDirectory)/api-auth-automation/reports'
+    failTaskOnFailedTests: false
+  displayName: 'Publicar JUnit (Newman)'
+
