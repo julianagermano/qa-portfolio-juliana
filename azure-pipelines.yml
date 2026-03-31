@@ -22,9 +22,9 @@ steps:
   displayName: 'Instalar Node.js 20'
 
 - powershell: |
-    npm install -g newman newman-reporter-htmlextra --legacy-peer-deps --force
+    npm install -g newman newman-reporter-htmlextra newman-reporter-junitfull --force
     newman -v
-  displayName: 'Instalar Newman + htmlextra'
+  displayName: 'Instalar Newman + reporters (htmlextra/junit)'
 
 # =========================
 # CONTRACT GATE - API (login + me)
