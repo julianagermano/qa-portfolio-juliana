@@ -39,3 +39,11 @@ steps:
     New-Item -ItemType Directory -Force "reports" | Out-Null
 
     $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
+- task: PublishPipelineArtifact@1
+  condition: succeededOrFailed()
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/api-auth-automation/reports'
+    artifact: 'contract-report'
+    publishLocation: 'pipeline'
+  displayName: 'Publicar relatório de contrato (HTML)'
+
