@@ -47,3 +47,11 @@ steps:
     publishLocation: 'pipeline'
   displayName: 'Publicar relatório de contrato (HTML)'
 
+- task: PowerShell@2
+  displayName: 'Executar Newman (Contrato)'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $base = "$(Build.SourcesDirectory)/api-auth-automation"
+      New-Item -ItemType Directory -Force -Path "$base/reports" | Out-Null
+      newman run "$base/collections/contract.json" -r html --reporter-html-export "$base/reports/contract.html"
