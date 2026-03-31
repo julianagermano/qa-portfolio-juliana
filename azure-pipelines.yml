@@ -32,28 +32,26 @@ steps:
 - powershell: |
     cd "$(Build.SourcesDirectory)/api-auth-automation"
 
-    # sincroniza schemas do Git -> environment
+    # Garantir que as ferramentas existem
+    npm install -g newman newman-reporter-htmlextra --force
+    newman -v
+
+    # Sincroniza schemas do Git -> environment
     node tools/sync-schemas-to-env.js
 
-    # garante pasta de reports (evita artifact vazio)
+    # Garante pasta de saída SEMPRE
     New-Item -ItemType Directory -Force "reports" | Out-Null
     $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
 
-    # Roda a collection REAL do projeto
+    # Executa a collection REAL do projeto (não contract.json)
     newman run "Auth.postman_collection.json" `
       -e "Auth_DummyJSON.postman_environment.json" `
       -r "cli,htmlextra" `
       --reporter-htmlextra-export "reports/Resultado_API_Contrato_$ts.html"
 
-    Write-Host "=== Conteúdo da pasta reports ==="
+    Write-Host "=== Arquivos gerados em reports ==="
     dir .\reports
-    displayName: "Executar Newman (Contrato)"
-    inputs:
-    targetType: 'inline'
-    script: |
-      $base = "$(Build.SourcesDirectory)/api-auth-automation"
-      New-Item -ItemType Directory -Force -Path "$base/reports" | Out-Null
-      newman run "$base/collections/contract.json" -r html --reporter-html-export "$base/reports/contract.html"
+  displayName: "Executar Newman (Contrato)"
 
 - task: PublishPipelineArtifact@1
   condition: succeededOrFailed()
