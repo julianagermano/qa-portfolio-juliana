@@ -32,13 +32,10 @@ steps:
 - powershell: |
     cd "$(Build.SourcesDirectory)/api-auth-automation"
 
-    # Confirma que os arquivos existem (diagnóstico rápido)
-    dir
-
-    # Sincroniza schemas do Git -> environment
+    # sincroniza schemas do Git -> environment
     node tools/sync-schemas-to-env.js
 
-    # Garante pasta de reports
+    # garante pasta de reports (evita artifact vazio)
     New-Item -ItemType Directory -Force "reports" | Out-Null
     $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
 
@@ -48,12 +45,10 @@ steps:
       -r "cli,htmlextra" `
       --reporter-htmlextra-export "reports/Resultado_API_Contrato_$ts.html"
 
-    Write-Host "=== Arquivos gerados em reports ==="
+    Write-Host "=== Conteúdo da pasta reports ==="
     dir .\reports
-   
-- task: PowerShell@2
-  displayName: 'Executar Newman (Contrato)'
-  inputs:
+    displayName: "Executar Newman (Contrato)"
+    inputs:
     targetType: 'inline'
     script: |
       $base = "$(Build.SourcesDirectory)/api-auth-automation"
