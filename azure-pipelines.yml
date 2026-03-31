@@ -3,7 +3,7 @@
 trigger:
   branches:
     include:
-      - main 
+      - main
   paths:
     include:
       - pipeline-api/**
@@ -13,32 +13,29 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '20.x'
-    displayName: 'Instalar Node.js 20'
+- checkout: self
+  fetchDepth: 1
 
-  - script: |
-      npm install -g newman newman-reporter-htmlextra --legacy-peer-deps --force
-    displayName: 'Instalar Newman + htmlextra'
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Instalar Node.js 20'
 
-  - powershell: |
-      $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
-      newman run "$(Build.SourcesDirectory)/api-auth-automation/Auth.postman_collection.json" `
-        -e "$(Build.SourcesDirectory)/api-auth-automation/Auth_DummyJSON.postman_environment.json" `
-        -r "cli,htmlextra" `
-        --reporter-htmlextra-export "$(Build.SourcesDirectory)/api-auth-automation/Resultado_$ts.html"
-    displayName: 'Executar API (Newman)'
-  - powershell: |
-      cd "$(Build.SourcesDirectory)/api-auth-automation"
-      node tools/sync-schemas-to-env.js
-      newman run "Auth.postman_collection.json" -e "Auth_DummyJSON.postman_environment.json" -r cli
-    displayName: "Contract Gate - API (login + me)"
+- powershell: |
+    npm install -g newman newman-reporter-htmlextra --legacy-peer-deps --force
+    newman -v
+  displayName: 'Instalar Newman + htmlextra'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: '$(Build.SourcesDirectory)/api-auth-automation'
-      ArtifactName: 'newman-report'
-      publishLocation: 'Container'
-    condition: always()
-    displayName: 'Publicar relatório Newman'
+# =========================
+# CONTRACT GATE - API (login + me)
+# =========================
+- powershell: |
+    cd "$(Build.SourcesDirectory)/api-auth-automation"
+
+    # sincroniza schemas do Git -> environment
+    node tools/sync-schemas-to-env.js
+
+    # pasta para relatórios (evita "path does not exist")
+    New-Item -ItemType Directory -Force "reports" | Out-Null
+
+    $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
