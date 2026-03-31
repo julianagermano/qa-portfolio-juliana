@@ -7,7 +7,8 @@ const schemasDir = path.join(__dirname, "..", "schemas");
 const mapping = [
   { file: "login.response.200.schema.json", key: "schema_login_200" },
   { file: "login.response.401.schema.json", key: "schema_login_401" },
-  { file: "error.response.default.schema.json", key: "schema_error_default" }
+  { file: "error.response.default.schema.json", key: "schema_error_default" },
+  { file: "me.response.200.schema.json", key: "schema_me_200" }
 ];
 
 function loadJson(p) {
