@@ -21,48 +21,63 @@ steps:
     versionSpec: '20.x'
   displayName: 'Instalar Node.js 20'
 
+# (Item 1) Instalar Newman + reporters necessários (htmlextra + junitfull)
 - powershell: |
     npm install -g newman newman-reporter-htmlextra newman-reporter-junitfull --force
     newman -v
   displayName: 'Instalar Newman + reporters (htmlextra/junit)'
 
 # =========================
-# CONTRACT GATE - API (login + me)
+# (Item 2) Executar Newman (Contrato) — AQUI ✅
 # =========================
 - powershell: |
-    cd "$(Build.SourcesDirectory)/api-auth-automation"
+    $base    = Join-Path "$(Build.SourcesDirectory)" "api-auth-automation"
+    $reports = Join-Path $base "reports"
 
-    # Garantir que as ferramentas existem
-    npm install -g newman newman-reporter-htmlextra --force
-    newman -v
+    # Garantir pasta de reports sempre
+    New-Item -ItemType Directory -Force -Path $reports | Out-Null
 
     # Sincroniza schemas do Git -> environment
-    node tools/sync-schemas-to-env.js
+    node (Join-Path $base "tools\\sync-schemas-to-env.js")
 
-    # Garante pasta de saída SEMPRE
-    New-Item -ItemType Directory -Force "reports" | Out-Null
-    $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
+    $ts    = Get-Date -Format "yyyy-MM-dd_HHmmss"
+    $html  = Join-Path $reports ("Resultado_API_Contrato_{0}.html" -f $ts)
+    $junit = Join-Path $reports "junit.xml"
 
-    # Executa a collection REAL do projeto (não contract.json)
-    
-    newman run "Auth.postman_collection.json" `
-      -e "Auth_DummyJSON.postman_environment.json" `
-      -r "cli,htmlextra,junit" `
-      --reporter-htmlextra-export "reports/Resultado_API_Contrato_$ts.html" `
-      --reporter-junit-export "reports/junit.xml
+    $collection = Join-Path $base "Auth.postman_collection.json"
+    $envFile    = Join-Path $base "Auth_DummyJSON.postman_environment.json"
+
+    # Rodar Newman com HTML + JUnit
+    newman run $collection `
+      -e $envFile `
+      -r "cli,htmlextra,junitfull" `
+      --reporter-htmlextra-export $html `
+      --reporter-junitfull-export $junit
 
     Write-Host "=== Arquivos gerados em reports ==="
-    dir .\reports
-  displayName: "Executar Newman (Contrato)"
+    Get-ChildItem -Path $reports -Force | Format-Table Name, Length
 
+    # Falhar se não gerou nada (evita artifact vazio)
+    if (-not (Get-ChildItem -Path $reports -File -ErrorAction SilentlyContinue)) {
+      Write-Error "Nenhum arquivo foi gerado em reports/. Verifique comando do Newman/reporters."
+      exit 1
+    }
+  displayName: 'Executar Newman (Contrato)'
+
+# =========================
+# Publicar Artifact (pasta reports)
+# =========================
 - task: PublishPipelineArtifact@1
   condition: succeededOrFailed()
   inputs:
     targetPath: '$(Build.SourcesDirectory)/api-auth-automation/reports'
     artifact: 'contract-report'
     publishLocation: 'pipeline'
-  displayName: "Publicar relatório de contrato (HTML)"
-  
+  displayName: 'Publicar relatório de contrato (HTML)'
+
+# =========================
+# Publicar JUnit (aparece em Tests no ADO)
+# =========================
 - task: PublishTestResults@2
   condition: succeededOrFailed()
   inputs:
