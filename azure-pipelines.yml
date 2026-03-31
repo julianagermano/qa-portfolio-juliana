@@ -29,6 +29,11 @@ steps:
         -r "cli,htmlextra" `
         --reporter-htmlextra-export "$(Build.SourcesDirectory)/api-auth-automation/Resultado_$ts.html"
     displayName: 'Executar API (Newman)'
+  - powershell: |
+      cd "$(Build.SourcesDirectory)/api-auth-automation"
+      node tools/sync-schemas-to-env.js
+      newman run "Auth.postman_collection.json" -e "Auth_DummyJSON.postman_environment.json" -r cli
+    displayName: "Contract Gate - API (login + me)"
 
   - task: PublishBuildArtifacts@1
     inputs:
