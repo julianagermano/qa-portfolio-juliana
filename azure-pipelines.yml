@@ -26,89 +26,56 @@ steps:
     cd "$(Build.SourcesDirectory)/api-auth-automation"
     npm ci
     npx newman -v
-  displayName: 'Instalar dependências (npm ci) - API'
+  displayName: "Instalar dependências (npm ci) - API"
 
-# (Item 2) Executar Newman (Contrato) via npx (blindado contra aspas/path)
+# (Item 2) Executar Contract Gate SOMENTE se houver mudanças em api-auth-automation
 - powershell: |
-    $changed = git diff --name-only HEAD~1 HEAD | Select-String "^api-auth-automation/"
+    cd "$(Build.SourcesDirectory)"
+    $changed = git diff --name-only HEAD~1 HEAD
 
-    if (-not $changed) {
-      Write-Host "Nenhuma mudança em api-auth-automation. Pulando Contract Gate."
+    if (-not ($changed | Select-String "^api-auth-automation/")) {
+      Write-Host "⚠️ Nenhuma mudança em api-auth-automation. Pulando Contract Gate."
+      Write-Host "##vso[task.setvariable variable=runContract]false"
       exit 0
     }
 
-    $base    = Join-Path "$(Build.SourcesDirectory)" "api-auth-automation"
-    $reports = Join-Path $base "reports"
+    Write-Host "✅ Mudança em api-auth-automation detectada. Executando Contract Gate."
+    Write-Host "##vso[task.setvariable variable=runContract]true"
 
-    New-Item -ItemType Directory -Force -Path $reports | Out-Null
+    cd "$(Build.SourcesDirectory)/api-auth-automation"
 
-    node (Join-Path $base "tools\\sync-schemas-to-env.js")
+    # sync schemas Git -> environment
+    node tools/sync-schemas-to-env.js
 
-    $ts    = Get-Date -Format "yyyy-MM-dd_HHmmss"
-    $html  = Join-Path $reports ("Resultado_API_Contrato_{0}.html" -f $ts)
-    $junit = Join-Path $reports "junit.xml"
+    # reports
+    New-Item -ItemType Directory -Force "reports" | Out-Null
+    $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
 
-    $collection = Join-Path $base "Auth.postman_collection.json"
-    $envFile    = Join-Path $base "Auth_DummyJSON.postman_environment.json"
-
-    npx newman run $collection `
-      -e $envFile `
+    npx newman run "Auth.postman_collection.json" `
+      -e "Auth_DummyJSON.postman_environment.json" `
       -r "cli,htmlextra,junitfull" `
-      --reporter-htmlextra-export $html `
-      --reporter-junitfull-export $junit
+      --reporter-htmlextra-export "reports/Resultado_API_Contrato_$ts.html" `
+      --reporter-junitfull-export "reports/junit.xml"
 
-    Write-Host "=== Arquivos gerados em reports ==="
-    Get-ChildItem -Path $reports -Force | Format-Table Name, Length
     Write-Host "=== Conteúdo da pasta reports ==="
     dir .\reports
+  displayName: "Executar Newman (Contrato) - npx"
 
-    if (-not (Get-ChildItem -Path $reports -File -ErrorAction SilentlyContinue)) {
-      Write-Error "Nenhum arquivo foi gerado em reports/. Verifique comando do Newman/reporters."
-      exit 1
-    }
-  displayName: 'Executar Newman (Contrato) - npx'
-
-- powershell: |
-    $p = "$(Build.SourcesDirectory)/api-auth-automation/reports"
-    if (Test-Path $p) {
-      Write-Host "✅ reports existe: $p"
-      Write-Host "##vso[task.setvariable variable=hasReports]true"
-      Get-ChildItem $p -Force | Format-Table Name, Length
-    } else {
-      Write-Host "⚠️ reports NÃO existe: $p"
-      Write-Host "##vso[task.setvariable variable=hasReports]false"
-    }
-  displayName: "Checar pasta reports"
-  condition: succeededOrFailed()
-
-- powershell: |
-    $p = "$(Build.SourcesDirectory)/api-auth-automation/reports"
-    if (Test-Path $p) {
-      Write-Host "✅ reports existe: $p"
-      Write-Host "##vso[task.setvariable variable=hasReports]true"
-      Get-ChildItem $p -Force | Format-Table Name, Length
-    } else {
-      Write-Host "⚠️ reports NÃO existe: $p"
-      Write-Host "##vso[task.setvariable variable=hasReports]false"
-    }
-  displayName: "Checar pasta reports"
-  condition: succeededOrFailed()
-
-# Publicar Artifact (pasta reports)
+# Publicar Artifact apenas se rodou o gate (evita path inexistente)
 - task: PublishPipelineArtifact@1
-  condition: and(succeededOrFailed(), eq(variables.hasReports, 'true'))
+  condition: and(succeededOrFailed(), eq(variables.runContract, 'true'))
   inputs:
     targetPath: '$(Build.SourcesDirectory)/api-auth-automation/reports'
     artifact: 'contract-report'
     publishLocation: 'pipeline'
-  displayName: "Publicar relatório de contrato (HTML)"
-  
-# Publicar JUnit (aparece na aba Tests)
+  displayName: "Publicar relatório de contrato (Artifact)"
+
+# Publicar JUnit apenas se rodou o gate (evita warning junit.xml não encontrado)
 - task: PublishTestResults@2
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables.runContract, 'true'))
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: 'junit.xml'
     searchFolder: '$(Build.SourcesDirectory)/api-auth-automation/reports'
     failTaskOnFailedTests: false
-  displayName: 'Publicar JUnit (Newman)'
+  displayName: "Publicar JUnit (Newman)"
