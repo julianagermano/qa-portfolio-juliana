@@ -3,7 +3,7 @@
 trigger:
   branches:
     include:
-      - main 
+      - main
   paths:
     include:
       - pipeline-api/**
@@ -13,27 +13,67 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '20.x'
-    displayName: 'Instalar Node.js 20'
+- checkout: self
+  fetchDepth: 1
 
-  - script: |
-      npm install -g newman newman-reporter-htmlextra --legacy-peer-deps --force
-    displayName: 'Instalar Newman + htmlextra'
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Instalar Node.js 20'
 
-  - powershell: |
-      $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
-      newman run "$(Build.SourcesDirectory)/api-auth-automation/Auth.postman_collection.json" `
-        -e "$(Build.SourcesDirectory)/api-auth-automation/Auth_DummyJSON.postman_environment.json" `
-        -r "cli,htmlextra" `
-        --reporter-htmlextra-export "$(Build.SourcesDirectory)/api-auth-automation/Resultado_$ts.html"
-    displayName: 'Executar API (Newman)'
+# (Item 1) Instalar dependências do projeto (auto-contido)
+- powershell: |
+    cd "$(Build.SourcesDirectory)/api-auth-automation"
+    npm ci
+    npx newman -v
+  displayName: 'Instalar dependências (npm ci) - API'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: '$(Build.SourcesDirectory)/api-auth-automation'
-      ArtifactName: 'newman-report'
-      publishLocation: 'Container'
-    condition: always()
-    displayName: 'Publicar relatório Newman'
+# (Item 2) Executar Newman (Contrato) via npx (blindado contra aspas/path)
+- powershell: |
+    $base    = Join-Path "$(Build.SourcesDirectory)" "api-auth-automation"
+    $reports = Join-Path $base "reports"
+
+    New-Item -ItemType Directory -Force -Path $reports | Out-Null
+
+    node (Join-Path $base "tools\\sync-schemas-to-env.js")
+
+    $ts    = Get-Date -Format "yyyy-MM-dd_HHmmss"
+    $html  = Join-Path $reports ("Resultado_API_Contrato_{0}.html" -f $ts)
+    $junit = Join-Path $reports "junit.xml"
+
+    $collection = Join-Path $base "Auth.postman_collection.json"
+    $envFile    = Join-Path $base "Auth_DummyJSON.postman_environment.json"
+
+    npx newman run $collection `
+      -e $envFile `
+      -r "cli,htmlextra,junitfull" `
+      --reporter-htmlextra-export $html `
+      --reporter-junitfull-export $junit
+
+    Write-Host "=== Arquivos gerados em reports ==="
+    Get-ChildItem -Path $reports -Force | Format-Table Name, Length
+
+    if (-not (Get-ChildItem -Path $reports -File -ErrorAction SilentlyContinue)) {
+      Write-Error "Nenhum arquivo foi gerado em reports/. Verifique comando do Newman/reporters."
+      exit 1
+    }
+  displayName: 'Executar Newman (Contrato) - npx'
+
+# Publicar Artifact (pasta reports)
+- task: PublishPipelineArtifact@1
+  condition: succeededOrFailed()
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/api-auth-automation/reports'
+    artifact: 'contract-report'
+    publishLocation: 'pipeline'
+  displayName: 'Publicar relatório de contrato (HTML)'
+
+# Publicar JUnit (aparece na aba Tests)
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'junit.xml'
+    searchFolder: '$(Build.SourcesDirectory)/api-auth-automation/reports'
+    failTaskOnFailedTests: false
+  displayName: 'Publicar JUnit (Newman)'
