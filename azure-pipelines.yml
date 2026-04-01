@@ -59,6 +59,8 @@ steps:
 
     Write-Host "=== Arquivos gerados em reports ==="
     Get-ChildItem -Path $reports -Force | Format-Table Name, Length
+    Write-Host "=== Conteúdo da pasta reports ==="
+    dir .\reports
 
     if (-not (Get-ChildItem -Path $reports -File -ErrorAction SilentlyContinue)) {
       Write-Error "Nenhum arquivo foi gerado em reports/. Verifique comando do Newman/reporters."
