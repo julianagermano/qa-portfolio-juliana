@@ -21,23 +21,20 @@ steps:
     versionSpec: '20.x'
   displayName: 'Instalar Node.js 20'
 
-# (Item 1) Instalar Newman + reporters necessários (htmlextra + junitfull)
+# (Item 1) Instalar dependências do projeto (auto-contido)
 - powershell: |
-    npm install -g newman newman-reporter-htmlextra newman-reporter-junitfull --force
-    newman -v
-  displayName: 'Instalar Newman + reporters (htmlextra/junit)'
+    cd "$(Build.SourcesDirectory)/api-auth-automation"
+    npm ci
+    npx newman -v
+  displayName: 'Instalar dependências (npm ci) - API'
 
-# =========================
-# (Item 2) Executar Newman (Contrato) — AQUI ✅
-# =========================
+# (Item 2) Executar Newman (Contrato) via npx (blindado contra aspas/path)
 - powershell: |
     $base    = Join-Path "$(Build.SourcesDirectory)" "api-auth-automation"
     $reports = Join-Path $base "reports"
 
-    # Garantir pasta de reports sempre
     New-Item -ItemType Directory -Force -Path $reports | Out-Null
 
-    # Sincroniza schemas do Git -> environment
     node (Join-Path $base "tools\\sync-schemas-to-env.js")
 
     $ts    = Get-Date -Format "yyyy-MM-dd_HHmmss"
@@ -47,8 +44,7 @@ steps:
     $collection = Join-Path $base "Auth.postman_collection.json"
     $envFile    = Join-Path $base "Auth_DummyJSON.postman_environment.json"
 
-    # Rodar Newman com HTML + JUnit
-    newman run $collection `
+    npx newman run $collection `
       -e $envFile `
       -r "cli,htmlextra,junitfull" `
       --reporter-htmlextra-export $html `
@@ -57,16 +53,13 @@ steps:
     Write-Host "=== Arquivos gerados em reports ==="
     Get-ChildItem -Path $reports -Force | Format-Table Name, Length
 
-    # Falhar se não gerou nada (evita artifact vazio)
     if (-not (Get-ChildItem -Path $reports -File -ErrorAction SilentlyContinue)) {
       Write-Error "Nenhum arquivo foi gerado em reports/. Verifique comando do Newman/reporters."
       exit 1
     }
-  displayName: 'Executar Newman (Contrato)'
+  displayName: 'Executar Newman (Contrato) - npx'
 
-# =========================
 # Publicar Artifact (pasta reports)
-# =========================
 - task: PublishPipelineArtifact@1
   condition: succeededOrFailed()
   inputs:
@@ -75,9 +68,7 @@ steps:
     publishLocation: 'pipeline'
   displayName: 'Publicar relatório de contrato (HTML)'
 
-# =========================
-# Publicar JUnit (aparece em Tests no ADO)
-# =========================
+# Publicar JUnit (aparece na aba Tests)
 - task: PublishTestResults@2
   condition: succeededOrFailed()
   inputs:
@@ -86,4 +77,3 @@ steps:
     searchFolder: '$(Build.SourcesDirectory)/api-auth-automation/reports'
     failTaskOnFailedTests: false
   displayName: 'Publicar JUnit (Newman)'
-
