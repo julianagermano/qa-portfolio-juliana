@@ -30,6 +30,13 @@ steps:
 
 # (Item 2) Executar Newman (Contrato) via npx (blindado contra aspas/path)
 - powershell: |
+    $changed = git diff --name-only HEAD~1 HEAD | Select-String "^api-auth-automation/"
+
+    if (-not $changed) {
+      Write-Host "Nenhuma mudança em api-auth-automation. Pulando Contract Gate."
+      exit 0
+    }
+
     $base    = Join-Path "$(Build.SourcesDirectory)" "api-auth-automation"
     $reports = Join-Path $base "reports"
 
