@@ -83,20 +83,20 @@ você verá arquivos como:
 
 ## 📄 Testes de Contrato (QA-first) — Contract Gate
 
-Este projeto valida contratos de API (schemas) como **Quality Gate** em CI/CD.
+Este projeto implementa **testes de contrato (schemas)** como **Quality Gate** em CI/CD.
 
-### Onde ficam os contratos (schemas)
-Os contratos estão versionados em:
+### 📌 Onde ficam os contratos
+Os contratos (JSON Schema) estão versionados em:
 - `api-auth-automation/schemas/`
 
-Exemplos:
+Principais schemas:
 - `login.response.200.schema.json`
 - `login.response.401.schema.json`
 - `error.response.default.schema.json`
 - `me.response.200.schema.json`
 
-### Como os schemas são usados
-Antes de executar o Newman, os schemas são sincronizados para o environment do Postman:
+### 🔄 Como os schemas são usados
+Antes da execução do Newman, os schemas são sincronizados para o environment do Postman via script:
 
 ```bash
 node tools/sync-schemas-to-env.js
