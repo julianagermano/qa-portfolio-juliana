@@ -66,15 +66,41 @@ steps:
     }
   displayName: 'Executar Newman (Contrato) - npx'
 
+- powershell: |
+    $p = "$(Build.SourcesDirectory)/api-auth-automation/reports"
+    if (Test-Path $p) {
+      Write-Host "✅ reports existe: $p"
+      Write-Host "##vso[task.setvariable variable=hasReports]true"
+      Get-ChildItem $p -Force | Format-Table Name, Length
+    } else {
+      Write-Host "⚠️ reports NÃO existe: $p"
+      Write-Host "##vso[task.setvariable variable=hasReports]false"
+    }
+  displayName: "Checar pasta reports"
+  condition: succeededOrFailed()
+
+- powershell: |
+    $p = "$(Build.SourcesDirectory)/api-auth-automation/reports"
+    if (Test-Path $p) {
+      Write-Host "✅ reports existe: $p"
+      Write-Host "##vso[task.setvariable variable=hasReports]true"
+      Get-ChildItem $p -Force | Format-Table Name, Length
+    } else {
+      Write-Host "⚠️ reports NÃO existe: $p"
+      Write-Host "##vso[task.setvariable variable=hasReports]false"
+    }
+  displayName: "Checar pasta reports"
+  condition: succeededOrFailed()
+
 # Publicar Artifact (pasta reports)
 - task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables.hasReports, 'true'))
   inputs:
     targetPath: '$(Build.SourcesDirectory)/api-auth-automation/reports'
     artifact: 'contract-report'
     publishLocation: 'pipeline'
-  displayName: 'Publicar relatório de contrato (HTML)'
-
+  displayName: "Publicar relatório de contrato (HTML)"
+  
 # Publicar JUnit (aparece na aba Tests)
 - task: PublishTestResults@2
   condition: succeededOrFailed()
