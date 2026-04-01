@@ -103,6 +103,9 @@ Boas práticas de QA Engineering
 
 ## 📚 Documentos de Estratégia de Qualidade
 
+- 🧾 Governança de Contratos de API (Breaking vs Non‑breaking)  
+  docs/governanca-contratos-api.md
+
 Os documentos abaixo consolidam a abordagem de QA Engineering aplicada neste portfólio, cobrindo estratégia de testes, mensageria, CI/CD, observabilidade e governança de qualidade.
 
 - 🧪 Estratégia de Testes (API x UI x Mensageria)  
