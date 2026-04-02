@@ -122,14 +122,11 @@ steps:
   continueOnError: true
 
 # Publicar JUnit (se existir)
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: 'test-results/junit.xml'
-    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
-    failTaskOnFailedTests: false
-  displayName: 'Publicar JUnit'
+- powershell: |
+    cd "$(Build.SourcesDirectory)/ui-api-token"   # ou a pasta real do seu projeto UI
+    npm ci
+    npx playwright test --reporter=junit --output=test-results
+  displayName: "Executar Playwright (gera JUnit)"
 
 # Publicar evidências (test-results)
 - task: PublishPipelineArtifact@1
