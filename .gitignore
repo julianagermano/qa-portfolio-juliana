@@ -8,3 +8,9 @@ api-auth-automation/reports/
 newman/
 api-auth-automation/newman/
 api-auth-automation/reports/
+
+
+node_modules/
+api-auth-automation/node_modules/
+api-auth-automation/newman/
+api-auth-automation/reports/

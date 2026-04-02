@@ -2,20 +2,9 @@
   "type": "object",
   "required": ["accessToken", "refreshToken"],
   "properties": {
-    "accessToken": {
-      "type": "string",
-      "minLength": 1
-    },
-    "refreshToken": {
-      "type": "string",
-      "minLength": 1
-    },
-    "tokenType": {
-      "type": "string"
-    },
-    "expiresIn": {
-      "type": "number"
-    }
+    "accessToken": { "type": "string", "minLength": 1 },
+    "refreshToken": { "type": "string", "minLength": 1 },
+    "tokenType": { "type": "string" }
   },
   "additionalProperties": true
 }
