@@ -1,2 +1,5 @@
 newman/
 reports/
+newman/
+api-auth-automation/newman/
+api-auth-automation/reports/
