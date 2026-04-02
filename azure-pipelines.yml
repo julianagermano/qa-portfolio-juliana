@@ -1,17 +1,3 @@
-# Projeto 3 — API (Newman) – CI
-
-trigger:
-  branches:
-    include:
-      - main
-  paths:
-    include:
-      - pipeline-api/**
-      - api-auth-automation/**
-
-pool:
-  vmImage: 'windows-latest'
-
 steps:
 - checkout: self
   fetchDepth: 0
@@ -33,8 +19,6 @@ steps:
     cd "$(Build.SourcesDirectory)"
 
     $commit = "$(Build.SourceVersion)"
-
-    # Merge-safe e não depende de HEAD~1
     $changed = git show -m --name-only --pretty=format: $commit
 
     Write-Host "=== Commit da build: $commit ==="
@@ -51,11 +35,8 @@ steps:
     Write-Host "##vso[task.setvariable variable=runContract]true"
 
     cd "$(Build.SourcesDirectory)/api-auth-automation"
-
-    # sync schemas Git -> environment
     node tools/sync-schemas-to-env.js
 
-    # reports
     New-Item -ItemType Directory -Force "reports" | Out-Null
     $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
 
