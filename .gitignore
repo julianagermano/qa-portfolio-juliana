@@ -1,16 +1,10 @@
-# Node / NPM
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Reports gerados localmente (opcional)
+newman/
+reports/
+newman/
+api-auth-automation/newman/
 api-auth-automation/reports/
-ui-auth-playwright/playwright-report/
-ui-auth-playwright/test-results/
-ui-api-token/playwright-report/
-ui-api-token/test-results/
 
-# OS
-.DS_Store
-Thumbs.db
+# Outputs do Newman (não versionar)
+newman/
+api-auth-automation/newman/
+api-auth-automation/reports/
