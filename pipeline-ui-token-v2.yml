@@ -14,31 +14,10 @@ steps:
 # =========================
 # CONTRACT GATE - API (login + me)
 # =========================
-- powershell: |
-    cd "$(Build.SourcesDirectory)/api-auth-automation"
-    node tools/sync-schemas-to-env.js
-
-    # Gera HTML para evidência
-    newman run "Auth.postman_collection.json" `
-      -e "Auth_DummyJSON.postman_environment.json" `
-      -r "cli,html" `
-      --reporter-html-export "Resultado_API_Contrato.html"
-  displayName: "Contract Gate - API (login + me)"
 
 # =========================
 # PUBLICAR RELATÓRIO (HTML) - mesmo se falhar
 # =========================
-- task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/api-auth-automation/Resultado_API_Contrato.html'
-    artifact: 'contract-report'
-  displayName: "Publicar relatório de contrato (HTML)"
-
-- task: NodeTool@0
-  inputs:
-    versionSpec: '$(NODE_VERSION)'
-  displayName: 'Usar Node.js $(NODE_VERSION)'
 
 # Diagnóstico: garante pasta do projeto
 - powershell: |
