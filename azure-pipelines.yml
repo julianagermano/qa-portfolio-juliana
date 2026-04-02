@@ -23,23 +23,30 @@ steps:
 - powershell: |
     cd "$(Build.SourcesDirectory)"
 
-    $commit = "$(Build.SourceVersion)"
-    $changed = git show -m --name-only --pretty=format: $commit
+    # ✅ FORÇAR EXECUÇÃO (quando marcar no Run)
+    if ('${{ parameters.forceContractGate }}' -eq 'true') {
+      Write-Host "✅ forceContractGate=true. Executando Contract Gate."
+      Write-Host "##vso[task.setvariable variable=runContract]true"
+    } else {
+      $commit = "$(Build.SourceVersion)"
+      $changed = git show -m --name-only --pretty=format: $commit
 
-    Write-Host "=== Commit da build: $commit ==="
-    Write-Host "=== Arquivos alterados detectados ==="
-    Write-Host $changed
+      Write-Host "=== Commit da build: $commit ==="
+      Write-Host "=== Arquivos alterados detectados ==="
+      Write-Host $changed
 
-    if (-not ($changed | Select-String "^api-auth-automation/")) {
-      Write-Host "⚠️ Nenhuma mudança em api-auth-automation. Pulando Contract Gate."
-      Write-Host "##vso[task.setvariable variable=runContract]false"
-      exit 0
+      if (-not ($changed | Select-String "^api-auth-automation/")) {
+        Write-Host "⚠️ Nenhuma mudança em api-auth-automation. Pulando Contract Gate."
+        Write-Host "##vso[task.setvariable variable=runContract]false"
+        exit 0
+      }
+
+      Write-Host "✅ Mudança em api-auth-automation detectada. Executando Contract Gate."
+      Write-Host "##vso[task.setvariable variable=runContract]true"
     }
 
-    Write-Host "✅ Mudança em api-auth-automation detectada. Executando Contract Gate."
-    Write-Host "##vso[task.setvariable variable=runContract]true"
-
     cd "$(Build.SourcesDirectory)/api-auth-automation"
+    npm ci
     node tools/sync-schemas-to-env.js
 
     New-Item -ItemType Directory -Force "reports" | Out-Null
