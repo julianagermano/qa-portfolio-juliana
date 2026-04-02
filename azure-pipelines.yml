@@ -41,8 +41,10 @@ steps:
       exit 0
     }
 
+    
     Write-Host "✅ Mudança em api-auth-automation detectada. Executando Contract Gate."
     Write-Host "##vso[task.setvariable variable=runContract]true"
+
 
     cd "$(Build.SourcesDirectory)/api-auth-automation"
 
