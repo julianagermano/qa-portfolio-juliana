@@ -1,4 +1,4 @@
-# 🚀 Automação de API – Auth (Postman + Newman)
+# 🚀 Automação de API – Auth (Postman e Newman)
 
 Este projeto demonstra uma automação completa de testes de API usando:
 
