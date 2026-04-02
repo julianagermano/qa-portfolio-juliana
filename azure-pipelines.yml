@@ -32,8 +32,14 @@ steps:
 - powershell: |
     cd "$(Build.SourcesDirectory)"
 
-    # ✅ Shallow-safe + merge-safe (não depende de HEAD~1)
-    $changed = git diff-tree --no-commit-id --name-only -r HEAD
+    $commit = "$(Build.SourceVersion)"
+
+    # Merge-safe e não depende de HEAD~1
+    $changed = git show -m --name-only --pretty=format: $commit
+
+    Write-Host "=== Commit da build: $commit ==="
+    Write-Host "=== Arquivos alterados detectados ==="
+    Write-Host $changed
 
     if (-not ($changed | Select-String "^api-auth-automation/")) {
       Write-Host "⚠️ Nenhuma mudança em api-auth-automation. Pulando Contract Gate."
@@ -41,10 +47,8 @@ steps:
       exit 0
     }
 
-    
     Write-Host "✅ Mudança em api-auth-automation detectada. Executando Contract Gate."
     Write-Host "##vso[task.setvariable variable=runContract]true"
-
 
     cd "$(Build.SourcesDirectory)/api-auth-automation"
 
