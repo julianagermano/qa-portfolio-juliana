@@ -31,7 +31,9 @@ steps:
 # (Item 2) Executar Contract Gate SOMENTE se houver mudanças em api-auth-automation
 - powershell: |
     cd "$(Build.SourcesDirectory)"
-    $changed = git diff --name-only HEAD~1 HEAD
+
+    # ✅ Shallow-safe + merge-safe (não depende de HEAD~1)
+    $changed = git diff-tree --no-commit-id --name-only -r HEAD
 
     if (-not ($changed | Select-String "^api-auth-automation/")) {
       Write-Host "⚠️ Nenhuma mudança em api-auth-automation. Pulando Contract Gate."
