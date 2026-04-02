@@ -160,6 +160,8 @@ Pronto
 
 ---
 
+<!-- validação do Contract Gate: mudança controlada -->
+
 
 Feito com 💛 por Juliana  
 Projeto desenvolvido para fins de aprendizado, portfólio e evolução em QA Engineering.
