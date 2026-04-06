@@ -131,6 +131,16 @@ steps:
   displayName: "Checar JUnit (Playwright)"
   condition: succeededOrFailed()
 
+# Publicar Test Results (JUnit) na aba Tests do Azure DevOps (somente se existir)
+- task: PublishTestResults@2
+  condition: and(succeededOrFailed(), eq(variables.hasJUnit, 'true'))
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'junit.xml'
+    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)/test-results'
+    failTaskOnFailedTests: false
+  displayName: 'Publicar Test Results (JUnit - Playwright)'
+
 # Publicar JUnit na aba Tests (somente se existir)
 - task: PublishTestResults@2
   condition: and(succeededOrFailed(), eq(variables.hasJUnit, 'true'))
