@@ -9,3 +9,8 @@ Este conjunto de documentos define como a Qualidade é aplicada com foco em **va
 - métricas e SLOs por jornada
 
 Objetivo: apoiar decisões de liberação com base em evidências e reduzir risco de produção.
+
+
+- 📦 Qualidade orientada a Produto (journeys, riscos, Go/No-Go, SLOs)  
+  docs/qualidade-produto/README.md
+
