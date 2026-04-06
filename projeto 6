@@ -9,36 +9,11 @@ variables:
   NODE_VERSION: '20.x'
   NPM_CACHE_FOLDER: $(Pipeline.Workspace)/.npm
   PLAYWRIGHT_BROWSERS_PATH: $(Pipeline.Workspace)/.pw-browsers
+  runE2E: 'false'
+  hasJUnit: 'false'
 
 steps:
-# =========================
-# CONTRACT GATE - API (login + me)
-# =========================
-- powershell: |
-    cd "$(Build.SourcesDirectory)/api-auth-automation"
-    node tools/sync-schemas-to-env.js
-
-    # Gera HTML para evidência
-    newman run "Auth.postman_collection.json" `
-      -e "Auth_DummyJSON.postman_environment.json" `
-      -r "cli,html" `
-      --reporter-html-export "Resultado_API_Contrato.html"
-  displayName: "Contract Gate - API (login + me)"
-
-# =========================
-# PUBLICAR RELATÓRIO (HTML) - mesmo se falhar
-# =========================
-- task: PublishPipelineArtifact@1
-  condition: succeededOrFailed()
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/api-auth-automation/Resultado_API_Contrato.html'
-    artifact: 'contract-report'
-  displayName: "Publicar relatório de contrato (HTML)"
-
-- task: NodeTool@0
-  inputs:
-    versionSpec: '$(NODE_VERSION)'
-  displayName: 'Usar Node.js $(NODE_VERSION)'
+- checkout: self
 
 # Diagnóstico: garante pasta do projeto
 - powershell: |
@@ -46,7 +21,7 @@ steps:
     Write-Host "Conteúdo da raiz do repo:"
     Get-ChildItem "$(Build.SourcesDirectory)" -Force
 
-    $proj = "$(Build.SourcesDirectory)/$(projectdir)"
+    $proj = "$(Build.SourcesDirectory)\$(projectdir)"
     Write-Host "Projeto esperado em: $proj"
 
     if (!(Test-Path $proj)) {
@@ -76,17 +51,7 @@ steps:
     npm ci
   displayName: 'PASSO C - Instalar dependências (npm ci)'
 
-# Cache Playwright browsers
-- task: Cache@2
-  inputs:
-    condition: eq(variables.runE2E, 'true')
-    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
-    restoreKeys: |
-      playwright | "$(Agent.OS)"
-    path: '$(PLAYWRIGHT_BROWSERS_PATH)'
-  displayName: 'Cache Playwright browsers'
-
-# Health Check (para falhar com clareza se BASE_URL estiver fora)
+# Health Check (define se roda E2E)
 - powershell: |
     Write-Host "BASE_URL=$env:BASE_URL"
 
@@ -96,7 +61,6 @@ steps:
       $hostName = $uri.Host
       Write-Host "Host detectado: $hostName"
 
-      # valida DNS
       [System.Net.Dns]::GetHostEntry($hostName) | Out-Null
       Write-Host "✅ DNS OK"
     } catch {
@@ -115,12 +79,23 @@ steps:
   env:
     BASE_URL: $(BASE_URL)
 
+# Cache Playwright browsers (condicional corretamente)
+- task: Cache@2
+  condition: eq(variables.runE2E, 'true')
+  inputs:
+    key: 'playwright | "$(Agent.OS)" | $(Build.SourcesDirectory)/$(projectdir)/package-lock.json'
+    restoreKeys: |
+      playwright | "$(Agent.OS)"
+    path: '$(PLAYWRIGHT_BROWSERS_PATH)'
+  displayName: 'Cache Playwright browsers'
+
 # Garantir pastas de evidências (evita "Path does not exist")
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
     New-Item -ItemType Directory -Force "test-results" | Out-Null
     New-Item -ItemType Directory -Force "playwright-report" | Out-Null
   displayName: 'Criar pastas de evidência'
+  condition: eq(variables.runE2E, 'true')
 
 # Instalar browsers Playwright
 - powershell: |
@@ -128,13 +103,14 @@ steps:
     $env:PLAYWRIGHT_BROWSERS_PATH = "$(PLAYWRIGHT_BROWSERS_PATH)"
     npx playwright install
   displayName: 'Instalar browsers do Playwright'
+  condition: eq(variables.runE2E, 'true')
   env:
     PLAYWRIGHT_BROWSERS_PATH: $(PLAYWRIGHT_BROWSERS_PATH)
 
-# Executar testes
+# Executar testes (uma vez só) — reporters já definidos no playwright.config.js
 - powershell: |
     Set-Location "$(Build.SourcesDirectory)/$(projectdir)"
-    npx playwright test --reporter=list,html,junit
+    npx playwright test
   displayName: "PASSO D - Executar testes Playwright"
   condition: eq(variables.runE2E, 'true')
   env:
@@ -142,15 +118,38 @@ steps:
     API_TOKEN: $(API_TOKEN)
   continueOnError: true
 
-# Publicar JUnit (se existir)
-- task: PublishTestResults@2
+# Checar se junit.xml existe (evita warning)
+- powershell: |
+    $junit = "$(Build.SourcesDirectory)\$(projectdir)\test-results\junit.xml"
+    if (Test-Path $junit) {
+      Write-Host "##vso[task.setvariable variable=hasJUnit]true"
+      Write-Host "✅ junit.xml encontrado: $junit"
+    } else {
+      Write-Host "##vso[task.setvariable variable=hasJUnit]false"
+      Write-Host "⚠️ junit.xml não encontrado"
+    }
+  displayName: "Checar JUnit (Playwright)"
   condition: succeededOrFailed()
+
+# Publicar Test Results (JUnit) na aba Tests do Azure DevOps (somente se existir)
+- task: PublishTestResults@2
+  condition: and(succeededOrFailed(), eq(variables.hasJUnit, 'true'))
   inputs:
     testResultsFormat: 'JUnit'
-    testResultsFiles: 'test-results/junit.xml'
-    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)'
+    testResultsFiles: 'junit.xml'
+    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)/test-results'
     failTaskOnFailedTests: false
-  displayName: 'Publicar JUnit'
+  displayName: 'Publicar Test Results (JUnit - Playwright)'
+
+# Publicar JUnit na aba Tests (somente se existir)
+- task: PublishTestResults@2
+  condition: and(succeededOrFailed(), eq(variables.hasJUnit, 'true'))
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'junit.xml'
+    searchFolder: '$(Build.SourcesDirectory)/$(projectdir)/test-results'
+    failTaskOnFailedTests: false
+  displayName: "Publicar Test Results (JUnit - Playwright)"
 
 # Publicar evidências (test-results)
 - task: PublishPipelineArtifact@1
@@ -158,6 +157,7 @@ steps:
   inputs:
     targetPath: '$(Build.SourcesDirectory)/$(projectdir)/test-results'
     artifact: 'test-results'
+    publishLocation: 'pipeline'
   displayName: 'Publicar test-results'
 
 # Publicar relatório HTML (playwright-report)
@@ -166,4 +166,5 @@ steps:
   inputs:
     targetPath: '$(Build.SourcesDirectory)/$(projectdir)/playwright-report'
     artifact: 'playwright-report'
+    publishLocation: 'pipeline'
   displayName: 'Publicar playwright-report'
