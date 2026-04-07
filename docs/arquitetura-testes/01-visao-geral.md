@@ -1,17 +1,20 @@
-# Arquitetura de Testes em Escala
+# 01 — Visão Geral da Arquitetura de Testes
 
-Esta documentação define a distribuição de testes por camadas, com foco em:
+A arquitetura de testes é orientada a **risco, valor de negócio e sustentabilidade**.
+O objetivo não é maximizar cobertura, mas **mitigar riscos relevantes com o menor custo operacional possível**.
 
-* mitigação de risco por jornada (produto)
-* sustentabilidade (menos flakiness e redundância)
-* feedback rápido em CI/CD
-* critérios claros de Go/No-Go
+A estratégia considera:
+- impacto no negócio
+- criticidade das jornadas do usuário
+- custo de manutenção dos testes
+- velocidade de feedback
+- confiabilidade da esteira de CI/CD
 
-Estrutura:
+Qualidade é tratada como parte do produto, não como uma etapa final.
+Testes são utilizados como **instrumento de decisão**, não apenas validação técnica.
 
-* 01-visao-geral.md
-* 02-mapa-camadas.md
-* 03-estrategia-por-risco.md
-* 04-pipelines-e-gates.md
-* 05-antipadroes.md
-
+Esta arquitetura busca:
+- reduzir flakiness
+- evitar duplicidade de testes
+- acelerar feedback para o time
+- garantir previsibilidade de releases

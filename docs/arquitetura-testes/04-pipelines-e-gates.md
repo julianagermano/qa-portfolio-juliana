@@ -1,17 +1,30 @@
-# Arquitetura de Testes em Escala
+# 04 — Pipelines e Quality Gates
 
-Esta documentação define a distribuição de testes por camadas, com foco em:
+A esteira de CI/CD é utilizada como mecanismo de controle de risco e suporte à decisão de liberação.
 
-* mitigação de risco por jornada (produto)
-* sustentabilidade (menos flakiness e redundância)
-* feedback rápido em CI/CD
-* critérios claros de Go/No-Go
+## Gates obrigatórios (No-Go se falhar)
+- Contract tests de API em endpoints críticos
+- Smoke UI das jornadas principais
+- Health check do ambiente
+- Erros críticos de regressão funcional
 
-Estrutura:
+---
 
-* 01-visao-geral.md
-* 02-mapa-camadas.md
-* 03-estrategia-por-risco.md
-* 04-pipelines-e-gates.md
-* 05-antipadroes.md
+## Gates condicionais
+- Regressão completa em ambiente instável
+- Testes longos noturnos
+- Dependências externas indisponíveis
 
+---
+
+## Modelo de decisão
+- **Go:** todos os gates obrigatórios passaram
+- **Go com mitigação:** falhas não críticas + plano de ação
+- **No-Go:** falha em fluxo crítico sem mitigação
+
+---
+
+## Evidências mínimas
+- link do pipeline
+- relatório de testes (HTML/JUnit)
+- logs ou traceId quando aplicável

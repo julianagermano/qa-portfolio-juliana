@@ -1,17 +1,23 @@
-# Arquitetura de Testes em Escala
+# 05 — Antipadrões em Arquitetura de Testes
 
-Esta documentação define a distribuição de testes por camadas, com foco em:
+## Antipadrões comuns
+- Automatizar tudo em UI
+- Duplicar testes em várias camadas
+- Quebrar build por instabilidade ambiental
+- Pipeline lento sem valor agregado
+- Testes frágeis e flakey
+- Falta de ownership claro
 
-* mitigação de risco por jornada (produto)
-* sustentabilidade (menos flakiness e redundância)
-* feedback rápido em CI/CD
-* critérios claros de Go/No-Go
+---
 
-Estrutura:
+## Consequências
+- baixa confiabilidade da automação
+- aumento de retrabalho
+- decisões de liberação inseguras
+- descredibilidade da qualidade
 
-* 01-visao-geral.md
-* 02-mapa-camadas.md
-* 03-estrategia-por-risco.md
-* 04-pipelines-e-gates.md
-* 05-antipadroes.md
+---
 
+## Diretriz
+Testes devem existir para **reduzir risco**, não para cumprir checklist.
+Menos testes, bem posicionados, geram mais valor do que cobertura excessiva.
