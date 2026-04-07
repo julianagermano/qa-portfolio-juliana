@@ -10,7 +10,7 @@ como evidência de comportamento.
 ## Cenário 1 — Criação de entidade e persistência correta (Relacional)
 
 ### Contexto
-Usuário cria um pedido via API.
+Usuário cria um pedido via API
 
 ### Ação
 - Executar POST /orders
