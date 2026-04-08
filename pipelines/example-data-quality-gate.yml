@@ -1,0 +1,85 @@
+parameters:
+- name: forceContractGate
+  type: boolean
+  default: false
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- checkout: self
+  fetchDepth: 0
+
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Instalar Node.js 20'
+
+# (Item 1) Instalar dependências do projeto (auto-contido)
+- powershell: |
+    cd "$(Build.SourcesDirectory)/api-auth-automation"
+    npm ci
+    npx newman -v
+  displayName: "Instalar dependências (npm ci) - API"
+
+# (Item 2) Executar Contract Gate SOMENTE se houver mudanças em api-auth-automation
+- powershell: |
+    cd "$(Build.SourcesDirectory)"
+
+    # ✅ FORÇAR EXECUÇÃO (quando marcar no Run)
+    if ('${{ parameters.forceContractGate }}' -eq 'true') {
+      Write-Host "✅ forceContractGate=true. Executando Contract Gate."
+      Write-Host "##vso[task.setvariable variable=runContract]true"
+    } else {
+      $commit = "$(Build.SourceVersion)"
+      $changed = git show -m --name-only --pretty=format: $commit
+
+      Write-Host "=== Commit da build: $commit ==="
+      Write-Host "=== Arquivos alterados detectados ==="
+      Write-Host $changed
+
+      if (-not ($changed | Select-String "^api-auth-automation/")) {
+        Write-Host "⚠️ Nenhuma mudança em api-auth-automation. Pulando Contract Gate."
+        Write-Host "##vso[task.setvariable variable=runContract]false"
+        exit 0
+      }
+
+      Write-Host "✅ Mudança em api-auth-automation detectada. Executando Contract Gate."
+      Write-Host "##vso[task.setvariable variable=runContract]true"
+    }
+
+    cd "$(Build.SourcesDirectory)/api-auth-automation"
+    npm ci
+    node tools/sync-schemas-to-env.js
+
+    New-Item -ItemType Directory -Force "reports" | Out-Null
+    $ts = Get-Date -Format "yyyy-MM-dd_HHmmss"
+
+    npx newman run "Auth.postman_collection.json" `
+      -e "Auth_DummyJSON.postman_environment.json" `
+      -r "cli,htmlextra,junitfull" `
+      --reporter-htmlextra-export "reports/Resultado_API_Contrato_$ts.html" `
+      --reporter-junitfull-export "reports/junit.xml"
+
+    Write-Host "=== Conteúdo da pasta reports ==="
+    dir .\reports
+  displayName: "Executar Newman (Contrato) - npx"
+
+# Publicar Artifact apenas se rodou o gate (evita path inexistente)
+- task: PublishPipelineArtifact@1
+  condition: and(succeededOrFailed(), eq(variables.runContract, 'true'))
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/api-auth-automation/reports'
+    artifact: 'contract-report'
+    publishLocation: 'pipeline'
+  displayName: "Publicar relatório de contrato (Artifact)"
+
+# Publicar JUnit apenas se rodou o gate (evita warning junit.xml não encontrado)
+- task: PublishTestResults@2
+  condition: and(succeededOrFailed(), eq(variables.runContract, 'true'))
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'junit.xml'
+    searchFolder: '$(Build.SourcesDirectory)/api-auth-automation/reports'
+    failTaskOnFailedTests: false
+  displayName: "Publicar JUnit (Newman)"
