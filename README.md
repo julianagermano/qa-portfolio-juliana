@@ -1,14 +1,28 @@
-# qa-portfolio-juliana
+# Portfolio Projects
 [![Build Status](https://dev.azure.com/SISTEMAS-DOTNET/QA/_apis/build/status%2Fjulianagermano.qa-portfolio-juliana?branchName=main)](https://dev.azure.com/SISTEMAS-DOTNET/QA/_build/latest?definitionId=2&branchName=main)
 
-QA Engineer com foco em automação, APIs, CI/CD e qualidade de ponta a ponta
+QA Engineer com foco em automação de testes, APIs, CI/CD e qualidade de software ponta a ponta.
+
+Este repositório apresenta projetos práticos de automação de testes
+(UI e API), integração contínua e estratégias de qualidade aplicadas
+a cenários reais de produto.
+
 ---
+
+## 🔍 What you will find here
+
+- API Test Automation (Postman + Newman)
+- UI Test Automation (Playwright)
+- CI/CD pipelines for test execution
+- Quality Gates and test strategy
+- Documentation focused on real-world QA scenarios
 
 ## 📁 Projetos do Portfólio
 
 ### 🚀 Projeto 1 — Automação de API (Auth – Postman + Newman)
 
-Automação completa de APIs com foco em qualidade funcional e estrutural.
+Automação de testes de API garantindo validação de contratos,
+integridade de dados e confiabilidade das integrações.
 
 **Principais características:**
 - Testes funcionais de API
@@ -24,9 +38,10 @@ Automação completa de APIs com foco em qualidade funcional e estrutural.
 
 ---
 
-### 🚀 Projeto 2 — Automação UI + Pipeline CI/CD (Playwright)
+### 🚀 Projeto 2 — UI Authentication Automation + CI/CD (Playwright)
 
-Projeto focado em automação de testes end‑to‑end (E2E) de interface, integrado a pipeline de CI/CD, com ênfase em decisões técnicas de qualidade.
+Automação de testes end-to-end validando fluxos críticos do usuário
+e reduzindo risco de falhas em produção.
 
 **Principais características:**
 - Automação UI com Playwright
@@ -44,13 +59,15 @@ Demonstrar uma abordagem moderna de QA Engineering, onde a automação:
 - escala de forma sustentável em pipelines
 
 📎 Projeto:  
-[ui-api-token](./ui-api-token/)
+[ui-api-auth-playwright](./ui-api-auth-playwright/)
 
 ---
 
 ## ▶️ Como Executar os Testes
 
-Este portfólio permite execução dos testes de duas formas: **execução local** ou **execução automática via pipeline (CI/CD)**.
+Integração dos testes automatizados ao pipeline CI/CD,
+garantindo validação contínua a cada mudança de código,
+redução de riscos em deploy e feedback rápido ao time.
 
 ### 1️⃣ Execução Local (Desenvolvimento / Aprendizado)
 
@@ -64,6 +81,7 @@ Utilize quando estiver:
 cd ui-api-token
 npm install
 npx playwright test
+``
 
 Para executar um teste específico:
 npx playwright test tests/preauth.spec.js
@@ -129,15 +147,12 @@ Os documentos abaixo consolidam a abordagem de QA Engineering aplicada neste por
   docs/template-incidente-post-mortem-qa.md
 
 Sobre mim
-Profissional de QA com foco em:
 
-Qualidade ponta a ponta
-Automação de testes
-Integração contínua
-API Testing
-Entrega com excelência
+QA Engineer com foco em qualidade ponta a ponta,
+automação de testes (API e UI) e integração contínua.
 
-Busco constantemente criar templates, pipelines e estratégias reutilizáveis para escalar qualidade em diferentes projetos.
+Atuo na criação de pipelines, estratégias e templates reutilizáveis
+para escalar qualidade e reduzir riscos ao longo do ciclo de entrega.
 
 Próximos projetos
 
