@@ -78,11 +78,10 @@ Utilize quando estiver:
 
 **Passo a passo:**
 ```bash
-cd ui-api-token
+cd ui-api-auth-playwright
 npm install
 npx playwright test
 ``
-
 Para executar um teste específico:
 npx playwright test tests/preauth.spec.js
 A execução local é manual e usada apenas para desenvolvimento.
@@ -101,14 +100,15 @@ decide se os testes devem ser executados
 publica relatórios e evidências
 
 
-✅ Boas Práticas Adotadas
+## ✅ Boas Práticas Adotadas
 
 Execução manual apenas para desenvolvimento
 Pipeline como fonte oficial de validação
 Separação clara entre automação e CI/CD
 Execução condicional baseada na disponibilidade do ambiente
 
-Objetivo do Portfólio
+## 🎯 Objetivo do Portfólio
+
 Centralizar projetos que demonstrem:
 
 Qualidade ponta a ponta
@@ -146,7 +146,7 @@ Os documentos abaixo consolidam a abordagem de QA Engineering aplicada neste por
 - 🚨 Template de Incidente (Post‑mortem)  
   docs/template-incidente-post-mortem-qa.md
 
-Sobre mim
+## 👤 Sobre mim
 
 QA Engineer com foco em qualidade ponta a ponta,
 automação de testes (API e UI) e integração contínua.
@@ -154,7 +154,7 @@ automação de testes (API e UI) e integração contínua.
 Atuo na criação de pipelines, estratégias e templates reutilizáveis
 para escalar qualidade e reduzir riscos ao longo do ciclo de entrega.
 
-Próximos projetos
+## 🚧 Próximos projetos
 
 Pipelines avançados em Azure DevOps
 Testes híbridos (API + UI)
