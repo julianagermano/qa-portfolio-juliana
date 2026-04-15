@@ -1,8 +1,7 @@
 # qa-portfolio-juliana
 [![Build Status](https://dev.azure.com/SISTEMAS-DOTNET/QA/_apis/build/status%2Fjulianagermano.qa-portfolio-juliana?branchName=main)](https://dev.azure.com/SISTEMAS-DOTNET/QA/_build/latest?definitionId=2&branchName=main)
 
-Portfólio de Qualidade de Software com foco em **APIs, Automação, CI/CD e Estratégia de Qualidade**.
-
+QA Engineer com foco em automação, APIs, CI/CD e qualidade de ponta a ponta
 ---
 
 ## 📁 Projetos do Portfólio
