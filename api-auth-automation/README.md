@@ -162,6 +162,34 @@ Pronto
 
 <!-- validação do Contract Gate: mudança controlada -->
 
+🎯 Valor para o negócio
+
+- Garante a estabilidade do fluxo de autenticação (login e acesso)
+- Evita falhas em produção relacionadas a autenticação
+- Protege integrações entre sistemas através de validação de contrato
+- Reduz risco de deploy com execução automatizada em pipeline
+
+---
+
+⚠️ Cenários críticos testados
+
+- Login com credenciais inválidas
+- Expiração de token e refresh automático
+- Acesso não autorizado (401)
+- Validação de contrato de resposta (JSON Schema)
+- Integridade dos dados retornados pela API
+
+---
+
+🧠 Decisões de QA
+
+- Priorização do fluxo de autenticação por ser crítico para o sistema
+- Uso de testes de contrato para evitar quebra entre serviços
+- Separação de dados de teste para facilitar manutenção
+- Execução via Newman pensando em CI/CD
+
+
+
 
 Feito com 💛 por Juliana  
 Projeto desenvolvido para fins de aprendizado, portfólio e evolução em QA Engineering.
